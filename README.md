@@ -8,6 +8,7 @@ Chat interno simples para comunicação com funcionários usando Firebase (Fires
 2) Ative o Firestore (modo de produção ou teste).
 3) Crie um app Web no Firebase e copie as credenciais.
 4) Edite o arquivo de configuração: [public/firebase-config.js](public/firebase-config.js)
+	- Para GitHub Pages, edite também: [docs/firebase-config.js](docs/firebase-config.js)
 
 ### Regras mínimas (teste)
 
@@ -40,16 +41,18 @@ Depois, restrinja as regras antes de usar em produção.
 
 - `http://localhost:3000`
 
-## Colocar online (Firebase Hosting)
+## Colocar online (GitHub Pages)
 
-Você pode hospedar gratuitamente no Firebase Hosting.
+1) No GitHub, vá em Settings → Pages.
+2) Em "Build and deployment", selecione:
+	- Source: "Deploy from a branch"
+	- Branch: main
+	- Folder: /docs
+3) Salve. Em alguns minutos, o link do site aparecerá nessa mesma tela.
 
-Passos básicos:
-
-1) Instale a CLI do Firebase.
-2) Rode `firebase login`.
-3) Rode `firebase init hosting` (pasta public).
-4) Rode `firebase deploy`.
+Observação:
+- A versão para Pages está em [docs/](docs/).
+- Para atualizar o site, faça commit e push das alterações em docs/.
 
 ## Recursos
 
