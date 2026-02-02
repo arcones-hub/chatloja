@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Interno</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <h1>Chat Interno</h1>
+        <div class="status" id="userStatus"></div>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <div class="card">
+            <h2>Perfil</h2>
+            <form id="loginForm" class="form">
+              <label>
+                Nome
+                <input type="text" id="nameInput" placeholder="Seu nome" required />
+              </label>
+              <label>
+                E-mail
+                <input type="email" id="emailInput" placeholder="seu@email.com" />
+              </label>
+              <button type="submit">Entrar</button>
+            </form>
+            <div class="profile" id="profileView" hidden>
+              <p><strong id="profileName"></strong></p>
+              <p class="muted" id="profileEmail"></p>
+              <button id="logoutBtn" class="ghost">Sair</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Salas</h2>
+            <div class="rooms" id="roomsList"></div>
+            <form id="roomForm" class="form">
+              <label>
+                Nova sala
+                <input type="text" id="roomInput" placeholder="ex: financeiro" />
+              </label>
+              <button type="submit">Criar</button>
+            </form>
+          </div>
+        </aside>
+
+        <main class="chat">
+          <div class="chat-header">
+            <div>
+              <h2 id="roomTitle">Selecione uma sala</h2>
+              <p class="muted" id="roomSubtitle">Histórico das últimas mensagens</p>
+            </div>
+          </div>
+
+          <div class="chat-body" id="messages"></div>
+
+          <form id="messageForm" class="chat-input">
+            <input
+              type="text"
+              id="messageInput"
+              placeholder="Digite sua mensagem..."
+              autocomplete="off"
+              disabled
+            />
+            <button type="submit" disabled>Enviar</button>
+          </form>
+        </main>
+      </section>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="/firebase-config.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

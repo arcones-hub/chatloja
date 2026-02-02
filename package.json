@@ -1,0 +1,12 @@
+{
+  "name": "chat-robo-interno",
+  "version": "1.0.0",
+  "description": "Chat interno simples para comunicação com funcionários",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
