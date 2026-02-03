@@ -97,6 +97,37 @@
               <button type="submit">Criar</button>
             </form>
           </div>
+
+          <div class="card" id="adminPanel" hidden>
+            <h2>Administração</h2>
+            <form id="userForm" class="form">
+              <label>
+                Nome
+                <input type="text" id="newUserName" placeholder="Nome completo" required />
+              </label>
+              <label>
+                E-mail
+                <input type="email" id="newUserEmail" placeholder="email@empresa.com" required />
+              </label>
+              <label>
+                Usuário
+                <input type="text" id="newUserUsername" placeholder="usuario" required />
+              </label>
+              <label>
+                Senha
+                <input type="password" id="newUserPassword" placeholder="senha" required />
+              </label>
+              <label>
+                Perfil
+                <select id="newUserRole">
+                  <option value="user">Usuário</option>
+                  <option value="admin">Administrador</option>
+                </select>
+              </label>
+              <button type="submit">Adicionar usuário</button>
+            </form>
+            <div class="users-list" id="usersList"></div>
+          </div>
         </aside>
 
         <main class="chat">
@@ -125,7 +156,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="/firebase-config.js?v=20260203-2"></script>
-    <script src="/app.js?v=20260203-2"></script>
+    <script src="/firebase-config.js?v=20260203-3"></script>
+    <script src="/app.js?v=20260203-3"></script>
   </body>
 </html>

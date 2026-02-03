@@ -19,6 +19,14 @@ const profileAvatar = document.getElementById("profileAvatar");
 const profileAvatarFallback = document.getElementById("profileAvatarFallback");
 const statusSelect = document.getElementById("statusSelect");
 const themeButtons = document.querySelectorAll(".theme-btn");
+const adminPanel = document.getElementById("adminPanel");
+const userForm = document.getElementById("userForm");
+const newUserName = document.getElementById("newUserName");
+const newUserEmail = document.getElementById("newUserEmail");
+const newUserUsername = document.getElementById("newUserUsername");
+const newUserPassword = document.getElementById("newUserPassword");
+const newUserRole = document.getElementById("newUserRole");
+const usersList = document.getElementById("usersList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
 
@@ -51,7 +59,7 @@ if (firebaseReady) {
 }
 
 
-const authUsers = [
+const defaultUsers = [
   {
     username: "admin",
     password: "guima00ads",
@@ -60,6 +68,34 @@ const authUsers = [
     role: "admin"
   }
 ];
+
+function saveUsers(users) {
+  localStorage.setItem("chatUsers", JSON.stringify(users));
+}
+
+function loadUsers() {
+  const raw = localStorage.getItem("chatUsers");
+  if (!raw) {
+    saveUsers(defaultUsers);
+    return [...defaultUsers];
+  }
+  try {
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data) || data.length === 0) {
+      saveUsers(defaultUsers);
+      return [...defaultUsers];
+    }
+    const hasAdmin = data.some((user) => user.role === "admin");
+    if (!hasAdmin) {
+      data.push(defaultUsers[0]);
+      saveUsers(data);
+    }
+    return data;
+  } catch {
+    saveUsers(defaultUsers);
+    return [...defaultUsers];
+  }
+}
 
 const defaultProfile = {
   status: "online",
@@ -81,7 +117,7 @@ function loadAuth() {
   try {
     const data = JSON.parse(raw);
     if (!data?.username) return null;
-    return authUsers.find((user) => user.username === data.username) || null;
+    return loadUsers().find((user) => user.username === data.username) || null;
   } catch {
     return null;
   }
@@ -166,6 +202,7 @@ function setLoggedIn(user) {
   userStatus.textContent = `Conectado como ${user.name}`;
   const settings = loadProfile();
   applyProfileSettings(settings);
+  updateAdminUi();
   setLogoutButtonsVisible(true);
 }
 
@@ -179,18 +216,33 @@ function setLoggedOut() {
   localStorage.removeItem("chatUser");
   localStorage.removeItem("chatAuth");
   setLogoutButtonsVisible(false);
+  updateAdminUi();
   showAuthGate();
 }
 
 function renderRooms() {
   roomsList.innerHTML = "";
   rooms.forEach((room) => {
+    const row = document.createElement("div");
+    row.className = "room-row";
+
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = room === currentRoom ? "room active" : "room";
     btn.textContent = room;
     btn.addEventListener("click", () => joinRoom(room));
-    roomsList.appendChild(btn);
+    row.appendChild(btn);
+
+    if (isAdmin()) {
+      const del = document.createElement("button");
+      del.type = "button";
+      del.className = "room-delete";
+      del.textContent = "Excluir";
+      del.addEventListener("click", () => deleteRoom(room));
+      row.appendChild(del);
+    }
+
+    roomsList.appendChild(row);
   });
 }
 
@@ -374,6 +426,93 @@ function handleAuthSuccess(user) {
   setLoggedIn({ name: user.name, email: user.email, role: user.role });
 }
 
+function isAdmin() {
+  return currentUser?.role === "admin";
+}
+
+function updateAdminUi() {
+  const admin = isAdmin();
+  if (adminPanel) adminPanel.hidden = !admin;
+  if (roomInput) roomInput.disabled = !admin;
+  if (roomForm) roomForm.querySelector("button").disabled = !admin;
+  if (admin) {
+    renderUsers();
+  } else if (usersList) {
+    usersList.innerHTML = "";
+  }
+  renderRooms();
+}
+
+function renderUsers() {
+  if (!usersList) return;
+  const users = loadUsers();
+  usersList.innerHTML = "";
+  users.forEach((user) => {
+    const row = document.createElement("div");
+    row.className = "user-row";
+
+    const info = document.createElement("span");
+    info.textContent = `${user.name} • ${user.email} (${user.role})`;
+    row.appendChild(info);
+
+    const actions = document.createElement("div");
+    actions.className = "user-actions";
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "user-delete";
+    del.textContent = "Excluir";
+    del.disabled = user.username === "admin";
+    del.addEventListener("click", () => removeUser(user.username));
+    actions.appendChild(del);
+
+    row.appendChild(actions);
+    usersList.appendChild(row);
+  });
+}
+
+function addUser(user) {
+  const users = loadUsers();
+  const exists = users.some(
+    (item) => item.username === user.username || item.email === user.email
+  );
+  if (exists) {
+    alert("Usuário ou e-mail já existe.");
+    return false;
+  }
+  users.push(user);
+  saveUsers(users);
+  return true;
+}
+
+function removeUser(username) {
+  if (username === "admin") return;
+  const users = loadUsers().filter((user) => user.username !== username);
+  saveUsers(users);
+  renderUsers();
+}
+
+async function deleteRoom(room) {
+  if (!isAdmin()) return;
+  if (!confirm(`Excluir a sala "${room}"?`)) return;
+  if (!firebaseReady) return;
+
+  if (currentRoom === room) {
+    leaveCurrentRoom();
+  }
+
+  const messagesRef = roomsRef.doc(room).collection("messages");
+  const batchSize = 50;
+  let snapshot = await messagesRef.limit(batchSize).get();
+  while (!snapshot.empty) {
+    const batch = roomsRef.firestore.batch();
+    snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    snapshot = await messagesRef.limit(batchSize).get();
+  }
+  await roomsRef.doc(room).delete();
+}
+
 function setLogoutButtonsVisible(isVisible) {
   logoutButtons.forEach((button) => {
     button.hidden = !isVisible;
@@ -397,7 +536,7 @@ if (authForm) {
     event.preventDefault();
     const username = authUserInput.value.trim();
     const password = authPassInput.value;
-    const found = authUsers.find((user) => {
+    const found = loadUsers().find((user) => {
       const loginId = username.toLowerCase();
       return (
         (user.username.toLowerCase() === loginId || user.email.toLowerCase() === loginId) &&
@@ -411,6 +550,30 @@ if (authForm) {
     handleAuthSuccess(found);
     authUserInput.value = "";
     authPassInput.value = "";
+  });
+}
+
+if (userForm) {
+  userForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!isAdmin()) return;
+    const user = {
+      name: newUserName.value.trim(),
+      email: newUserEmail.value.trim(),
+      username: newUserUsername.value.trim(),
+      password: newUserPassword.value,
+      role: newUserRole.value
+    };
+    if (!user.name || !user.email || !user.username || !user.password) return;
+    const created = addUser(user);
+    if (created) {
+      newUserName.value = "";
+      newUserEmail.value = "";
+      newUserUsername.value = "";
+      newUserPassword.value = "";
+      newUserRole.value = "user";
+      renderUsers();
+    }
   });
 }
 
@@ -454,7 +617,7 @@ logoutButtons.forEach((button) => {
 
 roomForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (!firebaseReady) return;
+  if (!firebaseReady || !isAdmin()) return;
   const value = roomInput.value.trim().toLowerCase();
   if (!value) return;
   if (!rooms.includes(value)) {
@@ -484,6 +647,7 @@ bootstrapRooms();
 
 loginForm.hidden = true;
 setLogoutButtonsVisible(false);
+updateAdminUi();
 const savedAuth = loadAuth();
 if (savedAuth) {
   handleAuthSuccess(savedAuth);

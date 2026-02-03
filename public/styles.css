@@ -183,11 +183,26 @@ button.ghost {
   margin-bottom: 12px;
 }
 
+.room-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .room {
   background: #e5f1ff;
   color: #1f4f84;
   text-align: left;
   border: 1px solid #7aa8e6;
+}
+
+.room-delete {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
 }
 
 .room.active {
@@ -271,6 +286,42 @@ button.ghost {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.users-list {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f1f7ff;
+  border: 1px solid #c7ddff;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.user-row span {
+  display: block;
+}
+
+.user-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.user-delete {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #fca5a5;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
 }
 
 .profile-header {
