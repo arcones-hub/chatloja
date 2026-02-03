@@ -50,6 +50,16 @@ Depois, restrinja as regras antes de usar em produção.
 	- Folder: /docs
 3) Salve. Em alguns minutos, o link do site aparecerá nessa mesma tela.
 
+## Link do sistema (GitHub Pages)
+
+Depois de ativar o Pages, o endereço ficará assim:
+
+```
+https://<seu-usuario>.github.io/<nome-do-repositorio>/
+```
+
+Substitua os valores e use este link para acessar o sistema pelo GitHub.
+
 Observação:
 - A versão para Pages está em [docs/](docs/).
 - Para atualizar o site, faça commit e push das alterações em docs/.
