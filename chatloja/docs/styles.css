@@ -11,18 +11,50 @@ body {
   min-height: 100vh;
 }
 body.theme-light {
-  justify-content: center;
+  background: #f8fafc;
+  color: #0f172a;
 }
 
-.login-card {
-  background: #111827;
-  border-radius: 16px;
-  padding: 24px;
-  width: min(420px, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.6);
+body.theme-light .app-header {
+  color: #0f172a;
+}
+
+body.theme-light .card,
+body.theme-light .chat,
+body.theme-light .chat-header,
+body.theme-light .chat-body,
+body.theme-light .message,
+body.theme-light .profile-settings,
+body.theme-light .presence-item,
+body.theme-light .user-row {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+body.theme-light .room-activity-avatar,
+body.theme-light .presence-avatar {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5f5;
+}
+
+body.theme-light .form input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.theme-light button {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+body.theme-light button.ghost,
+body.theme-light .settings-btn {
+  background: transparent;
+  color: #0f172a;
+  border-color: #e2e8f0;
 }
 
 #app {
@@ -487,23 +519,11 @@ button.ghost {
   margin-bottom: 12px;
 }
 
-<<<<<<< HEAD
-.room-item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
-}
-
-.room-item .room {
-  flex: 1;
-=======
 .room-row {
   display: flex;
   gap: 8px;
   align-items: center;
   justify-content: space-between;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 .room {
@@ -521,22 +541,12 @@ button.ghost {
   border-color: #38bdf8;
 }
 
-<<<<<<< HEAD
-.room-delete,
-.user-delete {
-  background: #451a1a;
-  border: 1px solid #7f1d1d;
-  color: #fecaca;
-  padding: 6px 10px;
-  border-radius: 8px;
-=======
 .room-delete {
   padding: 10px 12px;
   border-radius: 10px;
   border: 1px solid #7f1d1d;
   background: #450a0a;
   color: #fecaca;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   font-size: 12px;
 }
 
@@ -658,29 +668,6 @@ button.ghost {
 
 .muted {
   color: #94a3b8;
-}
-
-.users {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.user-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px;
-  border-radius: 12px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-}
-
-.user-info {
-  font-size: 12px;
-  color: #cbd5f5;
 }
 
 @media (max-width: 900px) {

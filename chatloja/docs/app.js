@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 
 const loginForm = document.getElementById("loginForm");
 const roomForm = document.getElementById("roomForm");
@@ -15,29 +13,6 @@ const userStatus = document.getElementById("userStatus");
 const profileView = document.getElementById("profileView");
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
-<<<<<<< HEAD
-const logoutBtn = document.getElementById("logoutBtn");
-const appRoot = document.getElementById("app");
-const loginScreen = document.getElementById("loginScreen");
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
-const adminPanel = document.getElementById("adminPanel");
-const userForm = document.getElementById("userForm");
-const userNameInput = document.getElementById("userNameInput");
-const userEmailInput = document.getElementById("userEmailInput");
-const userPasswordInput = document.getElementById("userPasswordInput");
-const usersList = document.getElementById("usersList");
-
-roomForm.hidden = true;
-adminPanel.hidden = true;
-
-let currentRoom = "";
-let currentUser = null;
-let isAdmin = false;
-let rooms = [...roomsSeed];
-let currentRoomUnsub = null;
-let usersUnsub = null;
-=======
 const profileStatusBadge = document.getElementById("profileStatusBadge");
 const profileAvatarWrap = document.getElementById("profileAvatarWrap");
 const avatarInput = document.getElementById("avatarInput");
@@ -61,6 +36,9 @@ const adminActions = document.getElementById("adminActions");
 const openAdminModal = document.getElementById("openAdminModal");
 const adminModal = document.getElementById("adminModal");
 const adminClose = document.getElementById("adminClose");
+const openUsersModal = document.getElementById("openUsersModal");
+const usersModal = document.getElementById("usersModal");
+const usersClose = document.getElementById("usersClose");
 const newUserName = document.getElementById("newUserName");
 const newUserEmail = document.getElementById("newUserEmail");
 const newUserUsername = document.getElementById("newUserUsername");
@@ -91,7 +69,6 @@ let activityUnsub = null;
 let privateUnsub = null;
 let currentPrivateRoom = "";
 let currentPrivateName = "";
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 
 const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
 let roomsRef = null;
@@ -112,10 +89,7 @@ if (firebaseReady) {
   const db = firebase.firestore(firebaseApp);
   roomsRef = db.collection("rooms");
   usersRef = db.collection("users");
-<<<<<<< HEAD
-=======
   privateRoomsRef = db.collection("privateRooms");
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
   if (firebase.auth) {
     const auth = firebase.auth(firebaseApp);
@@ -147,7 +121,7 @@ let avatarScale = 1;
 
 
 function saveUser(user) {
-  localStorage.setItem("chatUser", JSON.stringify({ email: user.email }));
+  localStorage.setItem("chatUser", JSON.stringify(user));
 }
 
 function saveAuth(user) {
@@ -511,21 +485,6 @@ function markCurrentUserOffline() {
 
 function setLoggedIn(user) {
   currentUser = user;
-<<<<<<< HEAD
-  isAdmin = Boolean(user.isAdmin);
-  loginScreen.hidden = true;
-  appRoot.hidden = false;
-  profileName.textContent = user.name;
-  profileEmail.textContent = user.email || "";
-  userStatus.textContent = `Conectado como ${user.name}`;
-  adminPanel.hidden = !isAdmin;
-  roomForm.hidden = !isAdmin;
-  if (isAdmin) {
-    startUsersListener();
-  } else {
-    stopUsersListener();
-  }
-=======
   if (loginForm) loginForm.hidden = true;
   profileView.hidden = false;
   profileName.textContent = user.name;
@@ -535,29 +494,17 @@ function setLoggedIn(user) {
   applyProfileSettings(settings);
   updateAdminUi();
   setLogoutButtonsVisible(true);
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 function setLoggedOut() {
   markCurrentUserOffline();
   currentUser = null;
-<<<<<<< HEAD
-  isAdmin = false;
-  loginScreen.hidden = false;
-  appRoot.hidden = true;
-=======
   if (loginForm) loginForm.hidden = true;
   profileView.hidden = true;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   userStatus.textContent = "";
   leaveCurrentRoom();
   disableChat();
   localStorage.removeItem("chatUser");
-<<<<<<< HEAD
-  adminPanel.hidden = true;
-  roomForm.hidden = true;
-  stopUsersListener();
-=======
   localStorage.removeItem("chatAuth");
   setLogoutButtonsVisible(false);
   updateAdminUi();
@@ -586,42 +533,19 @@ async function ensureAdminUser() {
       await docRef.update(updates);
     }
   }
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 function renderRooms() {
   roomsList.innerHTML = "";
   rooms.forEach((room) => {
-<<<<<<< HEAD
-    const wrapper = document.createElement("div");
-    wrapper.className = "room-item";
-=======
     const row = document.createElement("div");
     row.className = "room-row";
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = room === currentRoom ? "room active" : "room";
     btn.textContent = room;
     btn.addEventListener("click", () => joinRoom(room));
-<<<<<<< HEAD
-    wrapper.appendChild(btn);
-
-    if (isAdmin) {
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.className = "room-delete";
-      removeBtn.textContent = "Excluir";
-      removeBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        deleteRoom(room);
-      });
-      wrapper.appendChild(removeBtn);
-    }
-
-    roomsList.appendChild(wrapper);
-=======
     row.appendChild(btn);
 
     if (isAdmin()) {
@@ -634,7 +558,6 @@ function renderRooms() {
     }
 
     roomsList.appendChild(row);
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   });
 }
 
@@ -708,21 +631,6 @@ function joinRoom(room) {
   subscribeToRoom(room);
   subscribeToRoomActivity(room);
   updateRoomActivity("entrou na sala");
-}
-
-async function deleteRoom(room) {
-  if (!firebaseReady || !isAdmin) return;
-  if (!confirm(`Excluir a sala "${room}"?`)) return;
-  if (currentRoom === room) {
-    leaveCurrentRoom();
-    disableChat();
-  }
-  const roomDoc = roomsRef.doc(room);
-  const messagesSnap = await roomDoc.collection("messages").get();
-  const batch = roomsRef.firestore.batch();
-  messagesSnap.forEach((doc) => batch.delete(doc.ref));
-  batch.delete(roomDoc);
-  await batch.commit();
 }
 
 function leaveCurrentRoom() {
@@ -871,91 +779,6 @@ async function listenRooms() {
   });
 }
 
-<<<<<<< HEAD
-function startUsersListener() {
-  if (!firebaseReady || !usersRef) return;
-  if (usersUnsub) usersUnsub();
-  usersUnsub = usersRef.orderBy("name").onSnapshot((snapshot) => {
-    const list = snapshot.docs.map((doc) => doc.data());
-    renderUsers(list);
-  });
-}
-
-function stopUsersListener() {
-  if (usersUnsub) {
-    usersUnsub();
-    usersUnsub = null;
-  }
-  if (usersList) usersList.innerHTML = "";
-}
-
-function renderUsers(list) {
-  usersList.innerHTML = "";
-  if (!list.length) {
-    usersList.innerHTML = '<p class="muted">Nenhum usuário cadastrado.</p>';
-    return;
-  }
-  list.forEach((user) => {
-    const item = document.createElement("div");
-    item.className = "user-row";
-
-    const info = document.createElement("div");
-    info.className = "user-info";
-    info.textContent = `${user.name} (${user.email})`;
-
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "user-delete";
-    removeBtn.textContent = "Excluir";
-    removeBtn.disabled = user.email === ADMIN_EMAIL;
-    removeBtn.addEventListener("click", () => deleteUser(user.email));
-
-    item.appendChild(info);
-    item.appendChild(removeBtn);
-    usersList.appendChild(item);
-  });
-}
-
-async function deleteUser(email) {
-  if (!firebaseReady || !isAdmin) return;
-  if (email === ADMIN_EMAIL) return;
-  if (!confirm(`Excluir o usuário ${email}?`)) return;
-  await usersRef.doc(email).delete();
-}
-
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!firebaseReady) return;
-  const email = emailInput.value.trim().toLowerCase();
-  const password = passwordInput.value.trim();
-  if (!email || !password) return;
-
-  if (email === ADMIN_EMAIL) {
-    if (password !== ADMIN_PASSWORD) {
-      userStatus.textContent = "Senha inválida.";
-      return;
-    }
-    const adminUser = { name: ADMIN_NAME, email, isAdmin: true };
-    saveUser(adminUser);
-    setLoggedIn(adminUser);
-    return;
-  }
-
-  const userDoc = await usersRef.doc(email).get();
-  if (!userDoc.exists) {
-    userStatus.textContent = "Usuário não encontrado.";
-    return;
-  }
-  const data = userDoc.data();
-  if (data.password !== password) {
-    userStatus.textContent = "Senha inválida.";
-    return;
-  }
-
-  const user = { name: data.name || email, email, isAdmin: false };
-  saveUser(user);
-  setLoggedIn(user);
-=======
 function showAuthGate() {
   if (!authGate) return;
   authGate.hidden = false;
@@ -1297,6 +1120,18 @@ if (adminClose && adminModal) {
   });
 }
 
+if (openUsersModal && usersModal) {
+  openUsersModal.addEventListener("click", () => {
+    usersModal.hidden = false;
+  });
+}
+
+if (usersClose && usersModal) {
+  usersClose.addEventListener("click", () => {
+    usersModal.hidden = true;
+  });
+}
+
 if (privateClose) {
   privateClose.addEventListener("click", () => closePrivateChat());
 }
@@ -1329,7 +1164,6 @@ themeButtons.forEach((button) => {
     saveProfile(settings);
     applyTheme(theme);
   });
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 });
 
 if (avatarInput) {
@@ -1370,11 +1204,7 @@ logoutButtons.forEach((button) => {
 
 roomForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-<<<<<<< HEAD
-  if (!firebaseReady || !isAdmin) return;
-=======
   if (!firebaseReady || !isAdmin()) return;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   const value = roomInput.value.trim().toLowerCase();
   if (!value) return;
   if (!rooms.includes(value)) {
@@ -1384,36 +1214,7 @@ roomForm.addEventListener("submit", async (event) => {
   joinRoom(value);
 });
 
-<<<<<<< HEAD
-userForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  if (!firebaseReady || !isAdmin) return;
-  const name = userNameInput.value.trim();
-  const email = userEmailInput.value.trim().toLowerCase();
-  const password = userPasswordInput.value.trim();
-  if (!name || !email || !password) return;
-  if (email === ADMIN_EMAIL) {
-    userStatus.textContent = "Este e-mail é reservado.";
-    return;
-  }
-  await usersRef.doc(email).set(
-    {
-      name,
-      email,
-      password,
-      createdAt: serverTimestamp()
-    },
-    { merge: true }
-  );
-  userNameInput.value = "";
-  userEmailInput.value = "";
-  userPasswordInput.value = "";
-});
-
-messageForm.addEventListener("submit", (event) => {
-=======
 messageForm.addEventListener("submit", async (event) => {
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   event.preventDefault();
   if (!firebaseReady) return;
   const text = messageInput.value.trim();
@@ -1423,16 +1224,6 @@ messageForm.addEventListener("submit", async (event) => {
   messageInput.value = "";
 });
 
-<<<<<<< HEAD
-const savedUser = loadUser();
-if (savedUser?.email) {
-  emailInput.value = savedUser.email;
-}
-
-setLoggedOut();
-
-=======
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 async function bootstrapRooms() {
   if (!firebaseReady) return;
   await authReady;

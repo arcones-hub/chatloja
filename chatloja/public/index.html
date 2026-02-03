@@ -4,12 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat Interno</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="dist/output.css">
     <link rel="stylesheet" href="./styles.css" />
+    <!-- Removido referência ao favicon inexistente -->
   </head>
   <body>
-<<<<<<< HEAD
-=======
+    <div id="authGate" class="auth-gate" hidden>
+      <div class="auth-card">
+        <h2>Acesso</h2>
+        <p class="muted">Entre com usuário e senha para acessar o sistema.</p>
+        <form id="authForm" class="form">
+          <label>
+            Usuário
+            <input type="text" id="authUser" placeholder="ex: admin" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="authPass" placeholder="Sua senha" required />
+          </label>
+          <button type="submit" class="btn btn-primary">Entrar</button>
+          <div class="auth-error" id="authError" hidden>Usuário ou senha inválidos.</div>
         </form>
       </div>
     </div>
@@ -24,12 +38,6 @@
         <aside class="sidebar">
           <div class="card">
             <h2>Perfil</h2>
-<<<<<<< HEAD
-            <div class="profile" id="profileView">
-              <p><strong id="profileName"></strong></p>
-              <p class="muted" id="profileEmail"></p>
-              <button id="logoutBtn" class="ghost">Sair</button>
-=======
             <div class="profile" id="profileView" hidden>
               <div class="profile-header">
                 <div class="avatar-editor" id="profileAvatarWrap">
@@ -38,14 +46,14 @@
                     <span id="profileAvatarFallback">A</span>
                   </div>
                   <input type="file" id="avatarInput" accept="image/*" aria-label="Alterar foto" />
-                  <button type="button" class="avatar-edit-btn" aria-label="Editar foto">✏️</button>
+                  <button type="button" class="btn btn-ghost avatar-edit-btn" aria-label="Editar foto">✏️</button>
                 </div>
                 <div class="profile-meta">
                   <p><strong id="profileName"></strong></p>
                   <p class="muted" id="profileEmail"></p>
                   <span class="status-badge" id="profileStatusBadge">Online</span>
                 </div>
-                <button type="button" class="settings-btn" id="profileSettingsToggle" aria-label="Configurações do perfil">⚙️</button>
+                <button type="button" class="btn btn-ghost settings-btn" id="profileSettingsToggle" aria-label="Configurações do perfil">⚙️</button>
               </div>
 
               <div class="profile-settings" id="profileSettings" hidden>
@@ -62,21 +70,20 @@
                 <div class="inline-field">
                   Tema
                   <div class="theme-toggle" role="group" aria-label="Tema">
-                    <button type="button" class="theme-btn" data-theme="blue">Azul</button>
-                    <button type="button" class="theme-btn" data-theme="light">Branco</button>
+                    <button type="button" class="btn theme-btn" data-theme="blue">Azul</button>
+                    <button type="button" class="btn theme-btn" data-theme="light">Branco</button>
                   </div>
                 </div>
 
                 <div class="admin-actions" id="adminActions" hidden>
-                  <button type="button" class="ghost icon-btn" id="openAdminModal" aria-label="Administração">
+                  <button type="button" class="btn btn-ghost icon-btn" id="openAdminModal" aria-label="Administração">
                     <span class="icon">🛠️</span>
                     <span>Administração</span>
                   </button>
                 </div>
 
-                <button class="ghost logout-btn">Sair</button>
+                <button class="btn btn-ghost logout-btn">Sair</button>
               </div>
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
             </div>
           </div>
 
@@ -88,38 +95,16 @@
                 Nova sala
                 <input type="text" id="roomInput" placeholder="ex: financeiro" />
               </label>
-              <button type="submit">Criar</button>
+              <button type="submit" class="btn btn-primary">Criar</button>
             </form>
           </div>
 
-<<<<<<< HEAD
-          <div class="card" id="adminPanel" hidden>
-            <h2>Administração</h2>
-            <form id="userForm" class="form">
-              <label>
-                Nome
-                <input type="text" id="userNameInput" placeholder="Nome do usuário" required />
-              </label>
-              <label>
-                E-mail
-                <input type="email" id="userEmailInput" placeholder="email@empresa.com" required />
-              </label>
-              <label>
-                Senha
-                <input type="password" id="userPasswordInput" placeholder="Senha temporária" required />
-              </label>
-              <button type="submit">Adicionar usuário</button>
-            </form>
-            <div class="users" id="usersList"></div>
-          </div>
-=======
           <div class="card">
             <h2>Usuários</h2>
             <div class="presence-list" id="usersStatusList"></div>
           </div>
 
           <div class="card" id="adminPanel" hidden></div>
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
         </aside>
 
         <main class="chat">
@@ -134,12 +119,18 @@
           <div class="chat-body" id="messages"></div>
 
           <form id="messageForm" class="chat-input" style="display: flex; align-items: center; gap: 8px;">
-            <!-- Ícone de emoji (esquerda) -->
-            <button type="button" class="btn btn-ghost chat-emoji-btn" tabindex="-1" aria-label="Emoji">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-            </button>
+            <!-- Emoji Picker -->
+            <div style="position:relative;">
+              <button type="button" class="btn btn-ghost chat-emoji-btn" tabindex="-1" aria-label="Emoji">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </button>
+              <div id="emojiPicker" style="display:none; position:absolute; top:36px; left:0; background:#fff; border:1px solid #ccc; border-radius:8px; z-index:10; padding:8px; max-width:220px; max-height:180px; overflow:auto;">
+                😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😜 🤪 😝 😛 🤑 🤗 🤭 🤫 🤔 🤐 🤨 😐 😑 😶 🙄 😏 😒 😞 😔 😟 😕 🙁 ☹️ 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔
+              </div>
+            </div>
             <!-- Ícone de clipe de papel (esquerda) -->
-            <button type="button" class="btn btn-ghost chat-clip-btn" tabindex="-1" aria-label="Anexar arquivo">
+            <input type="file" id="clipInput" style="display:none" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.gif,.mp3,.wav,.ogg,.webm,.mp4,.mov,.avi,.m4a,.aac,.txt,.csv,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,image/*,audio/*,video/*">
+            <button type="button" class="btn btn-ghost chat-clip-btn" tabindex="-1" aria-label="Anexar arquivo" onclick="document.getElementById('clipInput').click()">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l10.61-10.61a3 3 0 0 1 4.24 4.24l-10.61 10.61a1 1 0 0 1-1.41-1.41l9.19-9.19"/></svg>
             </button>
             <!-- Campo de entrada -->
@@ -149,11 +140,11 @@
                 id="messageInput"
                 placeholder="Digite sua mensagem..."
                 autocomplete="off"
-                disabled
                 style="padding-right:70px; padding-left:10px; width:100%;"
               />
               <!-- Ícone de câmera (direita) -->
-              <span style="position:absolute; right:38px; top:50%; transform:translateY(-50%); cursor:pointer;">
+              <input type="file" id="cameraInput" style="display:none" accept="image/*,video/*" capture="environment">
+              <span style="position:absolute; right:38px; top:50%; transform:translateY(-50%); cursor:pointer;" onclick="document.getElementById('cameraInput').click()">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V7a2 2 0 0 0-2-2h-3.17a2 2 0 0 1-1.41-.59l-1.83-1.83A2 2 0 0 0 12.17 2H11.83a2 2 0 0 0-1.41.59L8.59 4.41A2 2 0 0 1 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="4"/></svg>
               </span>
             </div>
@@ -162,7 +153,7 @@
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
             </button>
             <!-- Botão de envio (ícone) -->
-            <button type="submit" aria-label="Enviar" disabled>
+            <button type="submit" class="btn btn-primary" aria-label="Enviar">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </form>
@@ -179,8 +170,8 @@
           <input type="range" id="avatarZoom" min="1" max="3" step="0.01" value="1" />
         </label>
         <div class="modal-actions">
-          <button type="button" class="ghost" id="avatarCancel">Cancelar</button>
-          <button type="button" id="avatarSave">Salvar</button>
+          <button type="button" class="btn btn-ghost" id="avatarCancel">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="avatarSave">Salvar</button>
         </div>
       </div>
     </div>
@@ -213,8 +204,8 @@
             </select>
           </label>
           <div class="modal-actions">
-            <button type="button" class="ghost" id="userModalCancel">Cancelar</button>
-            <button type="submit">Adicionar</button>
+            <button type="button" class="btn btn-ghost" id="userModalCancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Adicionar</button>
           </div>
         </form>
       </div>
@@ -224,12 +215,25 @@
       <div class="modal-content">
         <div class="flex items-center justify-between">
           <h3>Administração</h3>
-          <button type="button" class="ghost" id="adminClose">Fechar</button>
+          <button type="button" class="btn btn-ghost" id="adminClose">Fechar</button>
         </div>
-        <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
+        <button type="button" class="btn btn-ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
           <span class="icon">➕</span>
           <span>Adicionar usuário</span>
         </button>
+        <button type="button" class="btn btn-ghost icon-btn" id="openUsersModal" aria-label="Ver usuários">
+          <span class="icon">👥</span>
+          <span>Usuários</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="modal" id="usersModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3>Usuários</h3>
+          <button type="button" class="btn btn-ghost" id="usersClose">Fechar</button>
+        </div>
         <div class="users-list" id="usersList"></div>
       </div>
     </div>
@@ -238,7 +242,7 @@
       <div class="modal-content">
         <div class="flex items-center justify-between">
           <h3 id="privateTitle">Conversa privada</h3>
-          <button type="button" class="ghost" id="privateClose">Fechar</button>
+          <button type="button" class="btn btn-ghost" id="privateClose">Fechar</button>
         </div>
         <div id="privateMessages" class="chat-body"></div>
         <form id="privateForm" class="chat-input">
@@ -248,7 +252,7 @@
             placeholder="Digite sua mensagem..."
             autocomplete="off"
           />
-          <button type="submit">Enviar</button>
+          <button type="submit" class="btn btn-primary">Enviar</button>
         </form>
       </div>
     </div>
@@ -256,7 +260,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-29"></script>
-    <script src="./app.js?v=20260204-29"></script>
+    <script src="./firebase-config.js?v=20260204-30"></script>
+    <script src="./app.js?v=20260204-30"></script>
   </body>
 </html>
