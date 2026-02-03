@@ -288,7 +288,9 @@ function showAuthError(message) {
 }
 
 function handleAuthSuccess(user) {
-  hideAuthGate();
+  if (authGate) authGate.hidden = true;
+  appRoot.hidden = false;
+  appRoot.classList.remove("app-locked");
   if (authError) authError.hidden = true;
   saveAuth(user);
   saveUser({ name: user.name, email: user.email, role: user.role });
