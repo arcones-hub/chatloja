@@ -13,7 +13,14 @@ const userStatus = document.getElementById("userStatus");
 const profileView = document.getElementById("profileView");
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
-const logoutBtn = document.getElementById("logoutBtn");
+const logoutButtons = document.querySelectorAll(".logout-btn");
+const appRoot = document.getElementById("app");
+
+const authGate = document.getElementById("authGate");
+const authForm = document.getElementById("authForm");
+const authUserInput = document.getElementById("authUser");
+const authPassInput = document.getElementById("authPass");
+const authError = document.getElementById("authError");
 
 let currentRoom = "";
 let currentUser = null;
@@ -38,8 +45,34 @@ if (firebaseReady) {
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 }
 
+const authUsers = [
+  {
+    username: "admin",
+    password: "admin123",
+    name: "Administrador",
+    email: "admin@chatloja.local",
+    role: "admin"
+  }
+];
+
 function saveUser(user) {
   localStorage.setItem("chatUser", JSON.stringify(user));
+}
+
+function saveAuth(user) {
+  localStorage.setItem("chatAuth", JSON.stringify({ username: user.username }));
+}
+
+function loadAuth() {
+  const raw = localStorage.getItem("chatAuth");
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (!data?.username) return null;
+    return authUsers.find((user) => user.username === data.username) || null;
+  } catch {
+    return null;
+  }
 }
 
 function loadUser() {
@@ -59,16 +92,20 @@ function setLoggedIn(user) {
   profileName.textContent = user.name;
   profileEmail.textContent = user.email || "";
   userStatus.textContent = `Conectado como ${user.name}`;
+  setLogoutButtonsVisible(true);
 }
 
 function setLoggedOut() {
   currentUser = null;
-  loginForm.hidden = false;
+  loginForm.hidden = true;
   profileView.hidden = true;
   userStatus.textContent = "";
   leaveCurrentRoom();
   disableChat();
   localStorage.removeItem("chatUser");
+  localStorage.removeItem("chatAuth");
+  setLogoutButtonsVisible(false);
+  showAuthGate();
 }
 
 function renderRooms() {
@@ -231,8 +268,41 @@ function listenRooms() {
   });
 }
 
+function showAuthGate() {
+  if (!authGate) return;
+  authGate.hidden = false;
+  appRoot.classList.add("app-locked");
+}
+
+function hideAuthGate() {
+  if (!authGate) return;
+  authGate.hidden = true;
+  appRoot.classList.remove("app-locked");
+}
+
+function showAuthError(message) {
+  if (!authError) return;
+  authError.textContent = message;
+  authError.hidden = false;
+}
+
+function handleAuthSuccess(user) {
+  hideAuthGate();
+  if (authError) authError.hidden = true;
+  saveAuth(user);
+  saveUser({ name: user.name, email: user.email, role: user.role });
+  setLoggedIn({ name: user.name, email: user.email, role: user.role });
+}
+
+function setLogoutButtonsVisible(isVisible) {
+  logoutButtons.forEach((button) => {
+    button.hidden = !isVisible;
+  });
+}
+
 loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (authGate && !authGate.hidden) return;
   const name = document.getElementById("nameInput").value.trim();
   const email = document.getElementById("emailInput").value.trim();
   if (!name) return;
@@ -241,7 +311,27 @@ loginForm.addEventListener("submit", (event) => {
   setLoggedIn(user);
 });
 
-logoutBtn.addEventListener("click", () => setLoggedOut());
+if (authForm) {
+  authForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const username = authUserInput.value.trim();
+    const password = authPassInput.value;
+    const found = authUsers.find(
+      (user) => user.username === username && user.password === password
+    );
+    if (!found) {
+      showAuthError("Usuário ou senha inválidos.");
+      return;
+    }
+    handleAuthSuccess(found);
+    authUserInput.value = "";
+    authPassInput.value = "";
+  });
+}
+
+logoutButtons.forEach((button) => {
+  button.addEventListener("click", () => setLoggedOut());
+});
 
 roomForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -263,11 +353,6 @@ messageForm.addEventListener("submit", (event) => {
   messageInput.value = "";
 });
 
-const savedUser = loadUser();
-if (savedUser?.name) {
-  setLoggedIn(savedUser);
-}
-
 async function bootstrapRooms() {
   if (!firebaseReady) return;
   for (const room of roomsSeed) {
@@ -277,3 +362,12 @@ async function bootstrapRooms() {
 }
 
 bootstrapRooms();
+
+loginForm.hidden = true;
+setLogoutButtonsVisible(false);
+const savedAuth = loadAuth();
+if (savedAuth) {
+  handleAuthSuccess(savedAuth);
+} else {
+  showAuthGate();
+}

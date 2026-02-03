@@ -7,10 +7,30 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
+    <div id="authGate" class="auth-gate" hidden>
+      <div class="auth-card">
+        <h2>Acesso</h2>
+        <p class="muted">Entre com usuário e senha para acessar o sistema.</p>
+        <form id="authForm" class="form">
+          <label>
+            Usuário
+            <input type="text" id="authUser" placeholder="ex: admin" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="authPass" placeholder="Sua senha" required />
+          </label>
+          <button type="submit">Entrar</button>
+          <div class="auth-error" id="authError" hidden>Usuário ou senha inválidos.</div>
+        </form>
+      </div>
+    </div>
+
     <div id="app">
       <header class="app-header">
         <h1>Chat Interno</h1>
         <div class="status" id="userStatus"></div>
+        <button class="ghost logout-btn" hidden>Sair</button>
       </header>
 
       <section class="layout">
@@ -31,7 +51,7 @@
             <div class="profile" id="profileView" hidden>
               <p><strong id="profileName"></strong></p>
               <p class="muted" id="profileEmail"></p>
-              <button id="logoutBtn" class="ghost">Sair</button>
+              <button class="ghost logout-btn">Sair</button>
             </div>
           </div>
 
