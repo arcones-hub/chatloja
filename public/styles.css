@@ -23,6 +23,29 @@ body {
   color: var(--text);
 }
 
+body.theme-light {
+  background: #f8fafc;
+}
+
+body.theme-light .app-header {
+  background: #ffffff;
+  color: #1f2937;
+  text-shadow: none;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+body.theme-light .status {
+  color: #475569;
+}
+
+body.theme-light .chat-header {
+  background: #ffffff;
+}
+
+body.theme-light .chat-body {
+  background: #ffffff;
+}
+
 #app {
   min-height: 100vh;
   display: flex;
@@ -248,6 +271,91 @@ button.ghost {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.profile-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.profile-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #e2efff;
+  border: 2px solid #7aa8e6;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  font-weight: 700;
+  color: #1f4f84;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: #e6f9ed;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.status-badge.ausente {
+  background: #fef9c3;
+  color: #854d0e;
+  border-color: #fde047;
+}
+
+.status-badge.offline {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+.inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.inline-field select,
+.inline-field input[type="file"] {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #7aa8e6;
+  background: #f2f8ff;
+}
+
+.theme-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-btn {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #7aa8e6;
+  background: #f1f7ff;
+  color: #1f4f84;
+  font-size: 12px;
+}
+
+.theme-btn.active {
+  background: linear-gradient(180deg, #89c2ff 0%, #2b6cb0 100%);
+  color: #ffffff;
 }
 
 @media (max-width: 960px) {

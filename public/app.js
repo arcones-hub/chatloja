@@ -13,6 +13,12 @@ const userStatus = document.getElementById("userStatus");
 const profileView = document.getElementById("profileView");
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
+const profileStatusBadge = document.getElementById("profileStatusBadge");
+const avatarInput = document.getElementById("avatarInput");
+const profileAvatar = document.getElementById("profileAvatar");
+const profileAvatarFallback = document.getElementById("profileAvatarFallback");
+const statusSelect = document.getElementById("statusSelect");
+const themeButtons = document.querySelectorAll(".theme-btn");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
 
@@ -54,6 +60,12 @@ const authUsers = [
     role: "admin"
   }
 ];
+
+const defaultProfile = {
+  status: "online",
+  theme: "blue",
+  avatar: ""
+};
 function saveUser(user) {
   localStorage.setItem("chatUser", JSON.stringify(user));
 }
@@ -84,6 +96,67 @@ function loadUser() {
   }
 }
 
+function saveProfile(settings) {
+  localStorage.setItem("chatProfile", JSON.stringify(settings));
+}
+
+function loadProfile() {
+  const raw = localStorage.getItem("chatProfile");
+  if (!raw) return { ...defaultProfile };
+  try {
+    return { ...defaultProfile, ...JSON.parse(raw) };
+  } catch {
+    return { ...defaultProfile };
+  }
+}
+
+function applyTheme(theme) {
+  document.body.classList.toggle("theme-light", theme === "light");
+  themeButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.theme === theme);
+  });
+}
+
+function applyStatus(status) {
+  if (!profileStatusBadge) return;
+  profileStatusBadge.textContent =
+    status === "ausente" ? "Ausente" : status === "offline" ? "Offline" : "Online";
+  profileStatusBadge.classList.toggle("ausente", status === "ausente");
+  profileStatusBadge.classList.toggle("offline", status === "offline");
+  userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${profileStatusBadge.textContent}`;
+}
+
+function applyAvatar(avatar, name) {
+  const initials = name
+    ? name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "U";
+  if (profileAvatarFallback) {
+    profileAvatarFallback.textContent = initials;
+  }
+  if (profileAvatar) {
+    if (avatar) {
+      profileAvatar.src = avatar;
+      profileAvatar.hidden = false;
+      profileAvatarFallback.hidden = true;
+    } else {
+      profileAvatar.hidden = true;
+      profileAvatarFallback.hidden = false;
+    }
+  }
+}
+
+function applyProfileSettings(settings) {
+  if (statusSelect) statusSelect.value = settings.status;
+  applyTheme(settings.theme);
+  applyStatus(settings.status);
+  applyAvatar(settings.avatar, currentUser?.name);
+}
+
 function setLoggedIn(user) {
   currentUser = user;
   loginForm.hidden = true;
@@ -91,6 +164,8 @@ function setLoggedIn(user) {
   profileName.textContent = user.name;
   profileEmail.textContent = user.email || "";
   userStatus.textContent = `Conectado como ${user.name}`;
+  const settings = loadProfile();
+  applyProfileSettings(settings);
   setLogoutButtonsVisible(true);
 }
 
@@ -336,6 +411,40 @@ if (authForm) {
     handleAuthSuccess(found);
     authUserInput.value = "";
     authPassInput.value = "";
+  });
+}
+
+if (statusSelect) {
+  statusSelect.addEventListener("change", () => {
+    const settings = loadProfile();
+    settings.status = statusSelect.value;
+    saveProfile(settings);
+    applyStatus(settings.status);
+  });
+}
+
+themeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const theme = button.dataset.theme || "blue";
+    const settings = loadProfile();
+    settings.theme = theme;
+    saveProfile(settings);
+    applyTheme(theme);
+  });
+});
+
+if (avatarInput) {
+  avatarInput.addEventListener("change", () => {
+    const file = avatarInput.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const settings = loadProfile();
+      settings.avatar = String(reader.result || "");
+      saveProfile(settings);
+      applyAvatar(settings.avatar, currentUser?.name);
+    };
+    reader.readAsDataURL(file);
   });
 }
 

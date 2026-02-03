@@ -49,8 +49,39 @@
               <button type="submit">Entrar</button>
             </form>
             <div class="profile" id="profileView" hidden>
-              <p><strong id="profileName"></strong></p>
-              <p class="muted" id="profileEmail"></p>
+              <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatarWrap">
+                  <img id="profileAvatar" alt="Foto do perfil" hidden />
+                  <span id="profileAvatarFallback">A</span>
+                </div>
+                <div>
+                  <p><strong id="profileName"></strong></p>
+                  <p class="muted" id="profileEmail"></p>
+                  <span class="status-badge" id="profileStatusBadge">Online</span>
+                </div>
+              </div>
+
+              <label class="inline-field">
+                Alterar foto
+                <input type="file" id="avatarInput" accept="image/*" />
+              </label>
+
+              <label class="inline-field">
+                Status
+                <select id="statusSelect">
+                  <option value="online">Online</option>
+                  <option value="ausente">Ausente</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </label>
+
+              <div class="inline-field">
+                Tema
+                <div class="theme-toggle" role="group" aria-label="Tema">
+                  <button type="button" class="theme-btn" data-theme="blue">Azul</button>
+                  <button type="button" class="theme-btn" data-theme="light">Branco</button>
+                </div>
+              </div>
               <button class="ghost logout-btn">Sair</button>
             </div>
           </div>
@@ -94,7 +125,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="/firebase-config.js?v=20260203"></script>
-    <script src="/app.js?v=20260203"></script>
+    <script src="/firebase-config.js?v=20260203-2"></script>
+    <script src="/app.js?v=20260203-2"></script>
   </body>
 </html>
