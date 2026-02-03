@@ -7,7 +7,25 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="app">
+    <div id="loginScreen" class="login-screen">
+      <div class="login-card">
+        <h1>Chat Interno</h1>
+        <p class="muted">Entre com seu e-mail e senha.</p>
+        <form id="loginForm" class="form">
+          <label>
+            E-mail
+            <input type="email" id="emailInput" placeholder="seu@email.com" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="passwordInput" placeholder="Sua senha" required />
+          </label>
+          <button type="submit">Entrar</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="app" hidden>
       <header class="app-header">
         <h1>Chat Interno</h1>
         <div class="status" id="userStatus"></div>
@@ -17,18 +35,7 @@
         <aside class="sidebar">
           <div class="card">
             <h2>Perfil</h2>
-            <form id="loginForm" class="form">
-              <label>
-                Nome
-                <input type="text" id="nameInput" placeholder="Seu nome" required />
-              </label>
-              <label>
-                E-mail
-                <input type="email" id="emailInput" placeholder="seu@email.com" />
-              </label>
-              <button type="submit">Entrar</button>
-            </form>
-            <div class="profile" id="profileView" hidden>
+            <div class="profile" id="profileView">
               <p><strong id="profileName"></strong></p>
               <p class="muted" id="profileEmail"></p>
               <button id="logoutBtn" class="ghost">Sair</button>
@@ -45,6 +52,26 @@
               </label>
               <button type="submit">Criar</button>
             </form>
+          </div>
+
+          <div class="card" id="adminPanel" hidden>
+            <h2>Administração</h2>
+            <form id="userForm" class="form">
+              <label>
+                Nome
+                <input type="text" id="userNameInput" placeholder="Nome do usuário" required />
+              </label>
+              <label>
+                E-mail
+                <input type="email" id="userEmailInput" placeholder="email@empresa.com" required />
+              </label>
+              <label>
+                Senha
+                <input type="password" id="userPasswordInput" placeholder="Senha temporária" required />
+              </label>
+              <button type="submit">Adicionar usuário</button>
+            </form>
+            <div class="users" id="usersList"></div>
           </div>
         </aside>
 
