@@ -48,7 +48,7 @@ if (firebaseReady) {
 const authUsers = [
   {
     username: "admin",
-    password: "admin123",
+    password: "guima00ads",
     name: "Administrador",
     email: "admin@chatloja.local",
     role: "admin"
