@@ -271,15 +271,19 @@ function listenRooms() {
 function showAuthGate() {
   if (!authGate) return;
   authGate.hidden = false;
+  authGate.style.display = "flex";
   appRoot.classList.add("app-locked");
   appRoot.hidden = true;
+  appRoot.style.display = "none";
 }
 
 function hideAuthGate() {
   if (!authGate) return;
   authGate.hidden = true;
+  authGate.style.display = "none";
   appRoot.classList.remove("app-locked");
   appRoot.hidden = false;
+  appRoot.style.display = "";
 }
 
 function showAuthError(message) {
@@ -289,9 +293,7 @@ function showAuthError(message) {
 }
 
 function handleAuthSuccess(user) {
-  if (authGate) authGate.hidden = true;
-  appRoot.hidden = false;
-  appRoot.classList.remove("app-locked");
+  hideAuthGate();
   if (authError) authError.hidden = true;
   saveAuth(user);
   saveUser({ name: user.name, email: user.email, role: user.role });
