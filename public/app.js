@@ -50,7 +50,7 @@ const authUsers = [
     username: "admin",
     password: "guima00ads",
     name: "Administrador",
-    email: "admin@chatloja.local",
+    email: "arconesgp@hotmail.com",
     role: "admin"
   }
 ];
