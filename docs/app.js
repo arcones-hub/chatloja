@@ -272,12 +272,14 @@ function showAuthGate() {
   if (!authGate) return;
   authGate.hidden = false;
   appRoot.classList.add("app-locked");
+  appRoot.hidden = true;
 }
 
 function hideAuthGate() {
   if (!authGate) return;
   authGate.hidden = true;
   appRoot.classList.remove("app-locked");
+  appRoot.hidden = false;
 }
 
 function showAuthError(message) {
