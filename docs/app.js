@@ -318,9 +318,13 @@ if (authForm) {
     event.preventDefault();
     const username = authUserInput.value.trim();
     const password = authPassInput.value;
-    const found = authUsers.find(
-      (user) => user.username === username && user.password === password
-    );
+    const found = authUsers.find((user) => {
+      const loginId = username.toLowerCase();
+      return (
+        (user.username.toLowerCase() === loginId || user.email.toLowerCase() === loginId) &&
+        user.password === password
+      );
+    });
     if (!found) {
       showAuthError("Usuário ou senha inválidos.");
       return;
