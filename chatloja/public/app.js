@@ -1156,67 +1156,77 @@ if (loginForm) {
 }
 
 if (authForm) {
-  authForm.addEventListener("submit", (event) => {
+  authForm.addEventListener("submit", async (event) => {
     event.preventDefault();
-    const username = authUserInput.value.trim();
+    const email = authUserInput.value.trim();
     const password = authPassInput.value;
-    (async () => {
-      try {
-        if (!firebaseReady || !usersRef) return;
-        await authReady;
-        const loginId = username.toLowerCase();
-        let foundSnapshot = await usersRef
-          .where("usernameLower", "==", loginId)
-          .limit(1)
-          .get();
-        if (foundSnapshot.empty) {
-          foundSnapshot = await usersRef
-            .where("emailLower", "==", loginId)
-            .limit(1)
-            .get();
-        }
-        if (foundSnapshot.empty) {
-          foundSnapshot = await usersRef.where("username", "==", username).limit(1).get();
-        }
-        if (foundSnapshot.empty) {
-          foundSnapshot = await usersRef.where("email", "==", username).limit(1).get();
-        }
-        if (foundSnapshot.empty) {
-          showAuthError("Usuário ou senha inválidos.");
-          return;
-        }
-        const foundDoc = foundSnapshot.docs[0];
-        const found = foundDoc.data();
-        if (found.password !== password) {
-          showAuthError("Usuário ou senha inválidos.");
-          return;
-        }
-        if (!found.usernameLower || !found.emailLower) {
-          await foundDoc.ref.update({
-            usernameLower: found.username?.toLowerCase() || foundDoc.id,
-            emailLower: found.email?.toLowerCase() || ""
-          });
-        }
-        const userRooms = Array.isArray(found.rooms) ? found.rooms : [];
-        const userData = {
-          name: found.name,
-          email: found.email,
-          role: found.role,
-          rooms: userRooms,
-          username: found.username || foundDoc.id,
-          usernameLower: found.usernameLower || found.username?.toLowerCase() || foundDoc.id
-        };
-        handleAuthSuccess(userData);
-        authUserInput.value = "";
-        authPassInput.value = "";
-      } catch (error) {
-        showAuthError("Falha ao autenticar. Verifique permissões do Firestore.");
-        console.error(error);
+    if (!firebaseAuth) return showAuthError("Firebase Auth não inicializado.");
+    try {
+      const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      // Busca dados extras do usuário no Firestore
+      const userDoc = await usersRef.doc(user.uid).get();
+      let userData = {
+        name: user.displayName || "",
+        email: user.email,
+        role: "user",
+        username: user.email,
+        usernameLower: user.email.toLowerCase()
+      };
+      if (userDoc.exists) {
+        userData = { ...userData, ...userDoc.data() };
       }
-    })();
+      handleAuthSuccess(userData);
+      authUserInput.value = "";
+      authPassInput.value = "";
+    } catch (error) {
+      showAuthError("Usuário ou senha inválidos.");
+      console.error(error);
+    }
   });
 }
 
+// Logout usando Firebase Auth
+logoutButtons.forEach((button) => {
+  button.addEventListener("click", async () => {
+    if (firebaseAuth) await firebaseAuth.signOut();
+    setLoggedOut();
+  });
+});
+
+// Registro de novo usuário
+if (typeof registerForm !== 'undefined' && registerForm) {
+  registerForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = registerEmailInput.value.trim();
+    const password = registerPassInput.value;
+    const name = registerNameInput.value.trim();
+    if (!firebaseAuth) return showAuthError("Firebase Auth não inicializado.");
+    try {
+      const userCredential = await firebaseAuth.createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      await user.updateProfile({ displayName: name });
+      // Salva dados extras no Firestore
+      await usersRef.doc(user.uid).set({
+        name,
+        email,
+        role: "user",
+        username: email,
+        usernameLower: email.toLowerCase(),
+        createdAt: serverTimestamp(),
+        status: "offline",
+        avatar: ""
+      });
+      showAuthError("Usuário registrado! Faça login.");
+      registerEmailInput.value = "";
+      registerPassInput.value = "";
+      registerNameInput.value = "";
+    } catch (error) {
+      showAuthError("Erro ao registrar usuário: " + error.message);
+      console.error(error);
+    }
+  });
+})
 
 if (userForm) {
   userForm.addEventListener("submit", (event) => {
