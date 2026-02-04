@@ -1,4 +1,3 @@
-const roomsSeed = ["geral", "atendimento", "suporte", "financeiro"];
 
 const loginForm = document.getElementById("loginForm");
 const roomForm = document.getElementById("roomForm");
@@ -37,7 +36,7 @@ const authPassInput = document.getElementById("authPass");
 const authError = document.getElementById("authError");
 let currentRoom = "";
 let currentUser = null;
-let rooms = [...roomsSeed];
+let rooms = [];
 let currentRoomUnsub = null;
 
 const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
@@ -655,11 +654,7 @@ if (authForm) {
             emailLower: found.email?.toLowerCase() || ""
           });
         }
-        let userRooms = Array.isArray(found.rooms) ? found.rooms : [];
-        if (userRooms.length === 0) {
-          userRooms = roomsSeed.slice();
-          await foundDoc.ref.update({ rooms: userRooms });
-        }
+        const userRooms = Array.isArray(found.rooms) ? found.rooms : [];
         const userData = {
           name: found.name,
           email: found.email,
@@ -766,9 +761,6 @@ messageForm.addEventListener("submit", async (event) => {
 async function bootstrapRooms() {
   if (!firebaseReady) return;
   await authReady;
-  for (const room of roomsSeed) {
-    await ensureRoom(room);
-  }
   listenRooms();
 }
 
