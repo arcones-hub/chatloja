@@ -51,6 +51,7 @@ let currentRoomUnsub = null;
 
 const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
 let roomsRef = null;
+let usersRef = null;
 let serverTimestamp = null;
 
 if (!firebaseReady) {
@@ -64,47 +65,18 @@ if (firebaseReady) {
   const firebaseApp = firebase.initializeApp(window.firebaseConfig);
   const db = firebase.firestore(firebaseApp);
   roomsRef = db.collection("rooms");
+  usersRef = db.collection("users");
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
 }
 
 
-const defaultUsers = [
-  {
-    username: "admin",
-    password: "guima00ads",
-    name: "Administrador",
-    email: "arconesgp@hotmail.com",
-    role: "admin"
-  }
-];
-
-function saveUsers(users) {
-  localStorage.setItem("chatUsers", JSON.stringify(users));
-}
-
-function loadUsers() {
-  const raw = localStorage.getItem("chatUsers");
-  if (!raw) {
-    saveUsers(defaultUsers);
-    return [...defaultUsers];
-  }
-  try {
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data) || data.length === 0) {
-      saveUsers(defaultUsers);
-      return [...defaultUsers];
-    }
-    const hasAdmin = data.some((user) => user.role === "admin");
-    if (!hasAdmin) {
-      data.push(defaultUsers[0]);
-      saveUsers(data);
-    }
-    return data;
-  } catch {
-    saveUsers(defaultUsers);
-    return [...defaultUsers];
-  }
-}
+const defaultAdmin = {
+  username: "admin",
+  password: "guima00ads",
+  name: "Administrador",
+  email: "arconesgp@hotmail.com",
+  role: "admin"
+};
 
 const defaultProfile = {
   status: "online",
@@ -151,7 +123,7 @@ function loadAuth() {
   try {
     const data = JSON.parse(raw);
     if (!data?.username) return null;
-    return loadUsers().find((user) => user.username === data.username) || null;
+    return data;
   } catch {
     return null;
   }
@@ -252,6 +224,18 @@ function setLoggedOut() {
   setLogoutButtonsVisible(false);
   updateAdminUi();
   showAuthGate();
+}
+
+async function ensureAdminUser() {
+  if (!firebaseReady || !usersRef) return;
+  const docRef = usersRef.doc(defaultAdmin.username);
+  const snapshot = await docRef.get();
+  if (!snapshot.exists) {
+    await docRef.set({
+      ...defaultAdmin,
+      createdAt: serverTimestamp()
+    });
+  }
 }
 
 function renderRooms() {
@@ -570,19 +554,17 @@ function updateAdminUi() {
   if (adminPanel) adminPanel.hidden = !admin;
   if (roomInput) roomInput.disabled = !admin;
   if (roomForm) roomForm.querySelector("button").disabled = !admin;
-  if (admin) {
-    renderUsers();
-  } else if (usersList) {
+  if (!admin && usersList) {
     usersList.innerHTML = "";
   }
   renderRooms();
 }
 
-function renderUsers() {
+function renderUsersFromSnapshot(snapshot) {
   if (!usersList) return;
-  const users = loadUsers();
   usersList.innerHTML = "";
-  users.forEach((user) => {
+  snapshot.forEach((doc) => {
+    const user = doc.data();
     const row = document.createElement("div");
     row.className = "user-row";
 
@@ -615,48 +597,52 @@ function renderUsers() {
     del.addEventListener("click", () => removeUser(user.username));
     actions.appendChild(del);
 
-    row.appendChild(actions);
     usersList.appendChild(row);
   });
+  });
 }
-
-function addUser(user) {
-  const users = loadUsers();
-  const exists = users.some(
-    (item) => item.username === user.username || item.email === user.email
-  );
-  if (exists) {
-    alert("Usuário ou e-mail já existe.");
+async function addUser(user) {
+  if (!firebaseReady || !usersRef) return false;
+  const existingUsername = await usersRef.doc(user.username).get();
+  if (existingUsername.exists) {
+    alert("Usuário já existe.");
     return false;
   }
-  users.push(user);
-  saveUsers(users);
+  const existingEmail = await usersRef.where("email", "==", user.email).limit(1).get();
+  if (!existingEmail.empty) {
+    alert("E-mail já existe.");
+    return false;
+  }
+  await usersRef.doc(user.username).set({
+    ...user,
+    createdAt: serverTimestamp()
+  });
   return true;
 }
 
-function showUserPassword(username) {
-  const users = loadUsers();
-  const target = users.find((user) => user.username === username);
-  if (!target) return;
+async function removeUser(username) {
+  if (!firebaseReady || !usersRef) return;
+  if (username === "admin") return;
+  await usersRef.doc(username).delete();
+}
+
+async function showUserPassword(username) {
+  if (!firebaseReady || !usersRef) return;
+  const snapshot = await usersRef.doc(username).get();
+  if (!snapshot.exists) return;
+  const target = snapshot.data();
   alert(`Senha de ${target.username}: ${target.password}`);
 }
 
-function updateUserPassword(username) {
-  const users = loadUsers();
-  const target = users.find((user) => user.username === username);
-  if (!target) return;
+async function updateUserPassword(username) {
+  if (!firebaseReady || !usersRef) return;
+  const snapshot = await usersRef.doc(username).get();
+  if (!snapshot.exists) return;
+  const target = snapshot.data();
   const nextPassword = prompt(`Nova senha para ${target.username}:`, "");
   if (!nextPassword) return;
-  target.password = nextPassword;
-  saveUsers(users);
-  renderUsers();
+  await usersRef.doc(username).update({ password: nextPassword });
 }
-
-function removeUser(username) {
-  if (username === "admin") return;
-  const users = loadUsers().filter((user) => user.username !== username);
-  saveUsers(users);
-  renderUsers();
 }
 
 async function deleteRoom(room) {
@@ -705,20 +691,30 @@ if (authForm) {
     event.preventDefault();
     const username = authUserInput.value.trim();
     const password = authPassInput.value;
-    const found = loadUsers().find((user) => {
+    (async () => {
+      if (!firebaseReady || !usersRef) return;
       const loginId = username.toLowerCase();
-      return (
-        (user.username.toLowerCase() === loginId || user.email.toLowerCase() === loginId) &&
-        user.password === password
-      );
-    });
-    if (!found) {
-      showAuthError("Usuário ou senha inválidos.");
-      return;
-    }
-    handleAuthSuccess(found);
-    authUserInput.value = "";
-    authPassInput.value = "";
+      let foundSnapshot = await usersRef
+        .where("username", "==", loginId)
+        .where("password", "==", password)
+        .limit(1)
+        .get();
+      if (foundSnapshot.empty) {
+        foundSnapshot = await usersRef
+          .where("email", "==", loginId)
+          .where("password", "==", password)
+          .limit(1)
+          .get();
+      }
+      if (foundSnapshot.empty) {
+        showAuthError("Usuário ou senha inválidos.");
+        return;
+      }
+      const found = foundSnapshot.docs[0].data();
+      handleAuthSuccess(found);
+      authUserInput.value = "";
+      authPassInput.value = "";
+    })();
   });
 }
 
@@ -765,15 +761,16 @@ if (userForm) {
       role: newUserRole.value
     };
     if (!user.name || !user.email || !user.username || !user.password) return;
-    const created = addUser(user);
-    if (created) {
-      newUserName.value = "";
-      newUserEmail.value = "";
-      newUserUsername.value = "";
-      newUserPassword.value = "";
-      newUserRole.value = "user";
-      renderUsers();
-    }
+    (async () => {
+      const created = await addUser(user);
+      if (created) {
+        newUserName.value = "";
+        newUserEmail.value = "";
+        newUserUsername.value = "";
+        newUserPassword.value = "";
+        newUserRole.value = "user";
+      }
+    })();
   });
 }
 
@@ -851,6 +848,16 @@ bootstrapRooms();
 if (loginForm) loginForm.hidden = true;
 setLogoutButtonsVisible(false);
 updateAdminUi();
+if (firebaseReady) {
+  ensureAdminUser();
+  if (usersRef) {
+    usersRef.orderBy("name").onSnapshot((snapshot) => {
+      if (isAdmin()) {
+        renderUsersFromSnapshot(snapshot);
+      }
+    });
+  }
+}
 if (messageTools) {
   setActivePickerTab("emoji");
 }
