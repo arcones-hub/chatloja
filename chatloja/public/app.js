@@ -13,7 +13,6 @@ if (cameraInput) {
     reader.readAsDataURL(file);
     cameraInput.value = '';
   });
-}
 
 // Clip: documentos, fotos, áudio, localização
 const clipInput = document.getElementById('clipInput');
