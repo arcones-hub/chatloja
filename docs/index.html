@@ -59,6 +59,7 @@
                 <select id="statusSelect">
                   <option value="online">Online</option>
                   <option value="ocupado">Ocupado</option>
+                  <option value="ausente">Ausente</option>
                   <option value="offline">Offline</option>
                 </select>
               </label>
@@ -93,7 +94,8 @@
 
           <div class="card" id="adminPanel" hidden>
             <h2>Administração</h2>
-            <form id="userForm" class="form">
+            <button type="button" class="ghost" id="toggleUserForm">Novo usuário</button>
+            <form id="userForm" class="form" hidden>
               <label>
                 Nome
                 <input type="text" id="newUserName" placeholder="Nome completo" required />
@@ -129,6 +131,7 @@
               <h2 id="roomTitle">Selecione uma sala</h2>
               <p class="muted" id="roomSubtitle">Histórico das últimas mensagens</p>
             </div>
+            <div class="room-activity" id="roomActivity"></div>
           </div>
 
           <div class="chat-body" id="messages"></div>
@@ -150,7 +153,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-09"></script>
-    <script src="./app.js?v=20260204-09"></script>
+    <script src="./firebase-config.js?v=20260204-15"></script>
+    <script src="./app.js?v=20260204-15"></script>
   </body>
 </html>

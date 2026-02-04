@@ -8,17 +8,20 @@ const messageForm = document.getElementById("messageForm");
 const messageInput = document.getElementById("messageInput");
 const roomTitle = document.getElementById("roomTitle");
 const roomSubtitle = document.getElementById("roomSubtitle");
+const roomActivity = document.getElementById("roomActivity");
 const userStatus = document.getElementById("userStatus");
 const profileView = document.getElementById("profileView");
 const profileName = document.getElementById("profileName");
 const profileEmail = document.getElementById("profileEmail");
 const profileStatusBadge = document.getElementById("profileStatusBadge");
+const profileAvatarWrap = document.getElementById("profileAvatarWrap");
 const avatarInput = document.getElementById("avatarInput");
 const profileAvatar = document.getElementById("profileAvatar");
 const profileAvatarFallback = document.getElementById("profileAvatarFallback");
 const statusSelect = document.getElementById("statusSelect");
 const themeButtons = document.querySelectorAll(".theme-btn");
 const adminPanel = document.getElementById("adminPanel");
+const toggleUserForm = document.getElementById("toggleUserForm");
 const userForm = document.getElementById("userForm");
 const newUserName = document.getElementById("newUserName");
 const newUserEmail = document.getElementById("newUserEmail");
@@ -40,6 +43,7 @@ let currentRoom = "";
 let currentUser = null;
 let rooms = [];
 let currentRoomUnsub = null;
+let activityUnsub = null;
 
 const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
 let roomsRef = null;
@@ -91,7 +95,13 @@ function saveUser(user) {
 }
 
 function saveAuth(user) {
-  localStorage.setItem("chatAuth", JSON.stringify({ username: user.username }));
+  localStorage.setItem(
+    "chatAuth",
+    JSON.stringify({
+      username: user.username,
+      usernameLower: user.usernameLower || user.username?.toLowerCase() || ""
+    })
+  );
 }
 
 function loadAuth() {
@@ -139,13 +149,20 @@ function applyTheme(theme) {
 
 function applyStatus(status) {
   if (!profileStatusBadge) return;
-  const normalized = status === "ausente" ? "ocupado" : status;
+  const normalized = status || "online";
   profileStatusBadge.textContent =
-    normalized === "ocupado" ? "Ocupado" : normalized === "offline" ? "Offline" : "Online";
-  profileStatusBadge.classList.toggle("ausente", normalized === "ocupado");
+    normalized === "ocupado"
+      ? "Ocupado"
+      : normalized === "ausente"
+      ? "Ausente"
+      : normalized === "offline"
+      ? "Offline"
+      : "Online";
+  profileStatusBadge.classList.toggle("ausente", normalized === "ausente");
   profileStatusBadge.classList.toggle("ocupado", normalized === "ocupado");
-  profileStatusBadge.classList.toggle("offline", status === "offline");
+  profileStatusBadge.classList.toggle("offline", normalized === "offline");
   userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${profileStatusBadge.textContent}`;
+  updateProfilePresenceRing(normalized);
 }
 
 function applyAvatar(avatar, name) {
@@ -173,11 +190,25 @@ function applyAvatar(avatar, name) {
 }
 
 function applyProfileSettings(settings) {
-  const statusValue = settings.status === "ausente" ? "ocupado" : settings.status;
+  const statusValue = settings.status || "online";
   if (statusSelect) statusSelect.value = statusValue;
   applyTheme(settings.theme);
   applyStatus(statusValue);
   applyAvatar(settings.avatar, currentUser?.name);
+}
+
+function updateProfilePresenceRing(status) {
+  if (!profileAvatarWrap) return;
+  const ringClass =
+    status === "online"
+      ? "ring-online"
+      : status === "ocupado"
+      ? "ring-busy"
+      : status === "ausente"
+      ? "ring-away"
+      : "ring-offline";
+  profileAvatarWrap.classList.remove("ring-online", "ring-busy", "ring-away", "ring-offline");
+  profileAvatarWrap.classList.add(ringClass);
 }
 
 function normalizePresenceStatus(status) {
@@ -185,8 +216,11 @@ function normalizePresenceStatus(status) {
   if (value === "online") {
     return { key: "online", label: "Online" };
   }
-  if (value === "ocupado" || value === "ausente") {
+  if (value === "ocupado") {
     return { key: "busy", label: "Ocupado" };
+  }
+  if (value === "ausente") {
+    return { key: "away", label: "Ausente" };
   }
   return { key: "offline", label: "Offline" };
 }
@@ -384,6 +418,12 @@ function clearMessages() {
   messages.innerHTML = "";
 }
 
+function clearRoomActivity() {
+  if (roomActivity) {
+    roomActivity.innerHTML = "";
+  }
+}
+
 function enableChat(room) {
   roomTitle.textContent = `Sala: ${room}`;
   roomSubtitle.textContent = "Histórico das últimas mensagens";
@@ -405,19 +445,25 @@ function joinRoom(room) {
   leaveCurrentRoom();
   currentRoom = room;
   clearMessages();
+  clearRoomActivity();
   renderRooms();
   enableChat(room);
   subscribeToRoom(room);
-  sendSystemMessage(`${currentUser.name} entrou na sala.`);
+  subscribeToRoomActivity(room);
+  updateRoomActivity("entrou na sala");
 }
 
 function leaveCurrentRoom() {
   if (!firebaseReady) return;
   if (!currentRoom || !currentUser) return;
-  sendSystemMessage(`${currentUser.name} saiu da sala.`);
+  updateRoomActivity("saiu da sala");
   if (currentRoomUnsub) {
     currentRoomUnsub();
     currentRoomUnsub = null;
+  }
+  if (activityUnsub) {
+    activityUnsub();
+    activityUnsub = null;
   }
   currentRoom = "";
   renderRooms();
@@ -438,6 +484,7 @@ function subscribeToRoom(room) {
       clearMessages();
       snapshot.forEach((doc) => {
         const data = doc.data();
+        if (data.system) return;
         appendMessage({
           senderName: data.senderName,
           text: data.text,
@@ -470,19 +517,57 @@ async function sendMessage(text) {
   }
 }
 
-async function sendSystemMessage(text) {
-  if (!firebaseReady) return;
-  if (!currentRoom) return;
+async function updateRoomActivity(action) {
+  if (!firebaseReady || !currentRoom || !currentUser) return;
+  const usernameKey = currentUser.usernameLower || currentUser.username?.toLowerCase() || "";
+  if (!usernameKey) return;
   await authReady;
   await roomsRef
     .doc(currentRoom)
-    .collection("messages")
-    .add({
-      senderName: "Sistema",
-      senderEmail: "",
-      text,
-      system: true,
-      createdAt: serverTimestamp()
+    .collection("activity")
+    .doc(usernameKey)
+    .set(
+      {
+        name: currentUser.name,
+        status: loadProfile().status || "online",
+        action,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+}
+
+function renderRoomActivity(snapshot) {
+  if (!roomActivity) return;
+  roomActivity.innerHTML = "";
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    if (!data?.name) return;
+    const status = normalizePresenceStatus(data.status || "offline");
+    const item = document.createElement("div");
+    item.className = `room-activity-item ${status.key}`;
+    const dot = document.createElement("span");
+    dot.className = "room-activity-dot";
+    const text = document.createElement("span");
+    text.textContent = `${data.name}: ${data.action || ""}`.trim();
+    item.appendChild(dot);
+    item.appendChild(text);
+    roomActivity.appendChild(item);
+  });
+}
+
+function subscribeToRoomActivity(room) {
+  if (!firebaseReady) return;
+  if (activityUnsub) {
+    activityUnsub();
+  }
+  activityUnsub = roomsRef
+    .doc(room)
+    .collection("activity")
+    .orderBy("updatedAt", "desc")
+    .limit(10)
+    .onSnapshot((snapshot) => {
+      renderRoomActivity(snapshot);
     });
 }
 
@@ -550,6 +635,27 @@ function handleAuthSuccess(user) {
   setLoggedIn(normalizedUser);
   markCurrentUserOnline();
   listenRooms();
+}
+
+async function attemptAutoLogin() {
+  const saved = loadAuth();
+  if (!saved?.usernameLower || !firebaseReady || !usersRef) {
+    showAuthGate();
+    return;
+  }
+  try {
+    await authReady;
+    const snapshot = await usersRef.doc(saved.usernameLower).get();
+    if (!snapshot.exists) {
+      showAuthGate();
+      return;
+    }
+    const found = snapshot.data();
+    handleAuthSuccess(found);
+  } catch (error) {
+    console.error(error);
+    showAuthGate();
+  }
 }
 
 function isAdmin() {
@@ -796,6 +902,12 @@ if (userForm) {
   });
 }
 
+if (toggleUserForm && userForm) {
+  toggleUserForm.addEventListener("click", () => {
+    userForm.hidden = !userForm.hidden;
+  });
+}
+
 if (statusSelect) {
   statusSelect.addEventListener("change", () => {
     const settings = loadProfile();
@@ -854,6 +966,7 @@ messageForm.addEventListener("submit", async (event) => {
   const text = messageInput.value.trim();
   if (!text || !currentRoom || !currentUser) return;
   await sendMessage(text);
+  updateRoomActivity("enviou mensagem");
   messageInput.value = "";
 });
 
@@ -883,4 +996,13 @@ window.addEventListener("beforeunload", () => {
   markCurrentUserOffline();
 });
 const savedAuth = loadAuth();
-showAuthGate();
+attemptAutoLogin();
+
+setInterval(() => {
+  if (!currentUser) return;
+  const settings = loadProfile();
+  updateCurrentUserPresence({
+    status: settings.status || "online",
+    avatar: settings.avatar || ""
+  });
+}, 60000);

@@ -227,6 +227,53 @@ button.ghost {
   padding: 14px 16px;
   border-bottom: 2px solid var(--border);
   background: linear-gradient(180deg, #f1f7ff 0%, #d9ebff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.room-activity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  max-width: 55%;
+}
+
+.room-activity-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1f7ff;
+  border: 1px solid #c7ddff;
+  font-size: 11px;
+  color: #1f4f84;
+}
+
+.room-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.room-activity-item.online .room-activity-dot {
+  background: #22c55e;
+}
+
+.room-activity-item.busy .room-activity-dot {
+  background: #ef4444;
+}
+
+.room-activity-item.away .room-activity-dot {
+  background: #f59e0b;
+}
+
+.room-activity-item.offline .room-activity-dot {
+  background: #94a3b8;
 }
 
 .chat-body {
@@ -299,6 +346,10 @@ button.ghost {
   gap: 8px;
 }
 
+#toggleUserForm {
+  margin-bottom: 10px;
+}
+
 .user-row {
   display: flex;
   align-items: center;
@@ -344,6 +395,10 @@ button.ghost {
   align-items: center;
 }
 
+.profile-header .status-badge {
+  display: none;
+}
+
 .profile-avatar {
   width: 44px;
   height: 44px;
@@ -355,6 +410,22 @@ button.ghost {
   overflow: hidden;
   font-weight: 700;
   color: #1f4f84;
+}
+
+#profileAvatarWrap.ring-online .profile-avatar {
+  border-color: #22c55e;
+}
+
+#profileAvatarWrap.ring-busy .profile-avatar {
+  border-color: #ef4444;
+}
+
+#profileAvatarWrap.ring-away .profile-avatar {
+  border-color: #f59e0b;
+}
+
+#profileAvatarWrap.ring-offline .profile-avatar {
+  border-color: #94a3b8;
 }
 
 .avatar-editor {
@@ -491,6 +562,10 @@ button.ghost {
   border-color: #ef4444;
 }
 
+.presence-away .presence-avatar {
+  border-color: #f59e0b;
+}
+
 .presence-offline .presence-avatar {
   border-color: #94a3b8;
 }
@@ -562,6 +637,11 @@ button.ghost {
 
   .chat-body {
     padding: 12px;
+  }
+
+  .room-activity {
+    max-width: 100%;
+    justify-content: flex-start;
   }
 
   .chat-input {
