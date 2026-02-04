@@ -176,9 +176,20 @@ const appRoot = document.getElementById("app");
 const privateModal = document.getElementById("privateModal");
 const privateTitle = document.getElementById("privateTitle");
 const privateMessages = document.getElementById("privateMessages");
+
 const privateForm = document.getElementById("privateForm");
 const privateInput = document.getElementById("privateInput");
 const privateClose = document.getElementById("privateClose");
+
+if (privateForm && privateInput) {
+  privateForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const text = privateInput.value.trim();
+    if (!text) return;
+    await sendPrivateMessage(text);
+    privateInput.value = "";
+  });
+}
 
 const authGate = document.getElementById("authGate");
 const authForm = document.getElementById("authForm");
