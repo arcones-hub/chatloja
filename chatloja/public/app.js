@@ -1,3 +1,89 @@
+// Camera: foto ou vídeo
+const cameraInput = document.getElementById('cameraInput');
+if (cameraInput) {
+  cameraInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result;
+      await sendMessage(null, base64, file.type.startsWith('video/') ? 'video' : 'image');
+      updateRoomActivity(file.type.startsWith('video/') ? 'enviou um vídeo' : 'enviou uma foto');
+    };
+    reader.readAsDataURL(file);
+    cameraInput.value = '';
+  });
+}
+
+// Clip: documentos, fotos, áudio, localização
+const clipInput = document.getElementById('clipInput');
+if (clipInput) {
+  clipInput.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    for (const file of files) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64 = reader.result;
+        let type = 'file';
+        if (file.type.startsWith('image/')) type = 'image';
+        else if (file.type.startsWith('audio/')) type = 'audio';
+        else if (file.type.startsWith('video/')) type = 'video';
+        await sendMessage(null, base64, type, file.name);
+        updateRoomActivity('enviou um arquivo');
+      };
+      reader.readAsDataURL(file);
+    }
+    clipInput.value = '';
+  });
+}
+
+// Localização (clip): envia localização atual
+if (clipInput) {
+  clipInput.addEventListener('click', (e) => {
+    if (e.target && e.target.getAttribute('data-location') === 'true') {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const coords = pos.coords;
+          const locMsg = `Localização: https://maps.google.com/?q=${coords.latitude},${coords.longitude}`;
+          await sendMessage(locMsg);
+          updateRoomActivity('enviou localização');
+        });
+      } else {
+        alert('Navegador não suporta geolocalização.');
+      }
+    }
+  });
+}
+
+// Emoji picker
+const emojiBtn = document.querySelector('.chat-emoji-btn');
+const emojiPicker = document.getElementById('emojiPicker');
+if (emojiBtn && emojiPicker) {
+  emojiBtn.addEventListener('click', () => {
+    emojiPicker.style.display = emojiPicker.style.display === 'block' ? 'none' : 'block';
+  });
+  emojiPicker.addEventListener('click', (e) => {
+    if (e.target && e.target.textContent.trim()) {
+      messageInput.value += e.target.textContent.trim();
+      emojiPicker.style.display = 'none';
+      messageInput.focus();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+      emojiPicker.style.display = 'none';
+    }
+  });
+}
+
+// Envio ao clicar no ícone de envio
+const sendBtn = document.querySelector('button[type="submit"][aria-label="Enviar"]');
+if (sendBtn) {
+  sendBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    messageForm.dispatchEvent(new Event('submit', { cancelable: true }));
+  });
+}
 // Áudio: gravação e envio
 let mediaRecorder = null;
 let audioChunks = [];
@@ -731,9 +817,23 @@ async function sendMessage(text) {
       system: false,
       createdAt: serverTimestamp()
     };
+    // argumentos: text, base64, type, filename
     if (arguments.length > 1 && arguments[1]) {
-      data.type = 'audio';
-      data.audio = arguments[1];
+      const type = arguments[2] || 'file';
+      if (type === 'audio') {
+        data.type = 'audio';
+        data.audio = arguments[1];
+      } else if (type === 'image') {
+        data.type = 'image';
+        data.image = arguments[1];
+      } else if (type === 'video') {
+        data.type = 'video';
+        data.video = arguments[1];
+      } else if (type === 'file') {
+        data.type = 'file';
+        data.file = arguments[1];
+        if (arguments[3]) data.filename = arguments[3];
+      }
     } else {
       data.type = 'text';
       data.text = text;
