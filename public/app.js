@@ -862,8 +862,4 @@ if (messageTools) {
   setActivePickerTab("emoji");
 }
 const savedAuth = loadAuth();
-if (savedAuth) {
-  handleAuthSuccess(savedAuth);
-} else {
-  showAuthGate();
-}
+showAuthGate();
