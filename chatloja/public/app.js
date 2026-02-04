@@ -76,14 +76,8 @@ if (emojiBtn && emojiPicker) {
   });
 }
 
-// Envio ao clicar no ícone de envio
-const sendBtn = document.querySelector('button[type="submit"][aria-label="Enviar"]');
-if (sendBtn) {
-  sendBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    messageForm.dispatchEvent(new Event('submit', { cancelable: true }));
-  });
-}
+// Envio ao clicar no ícone de envio: não precisa de event.preventDefault, apenas submit normal do form
+// O submit do formulário já trata tanto Enter quanto clique no botão
 // Áudio: gravação e envio
 let mediaRecorder = null;
 let audioChunks = [];
