@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat Interno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -98,36 +99,10 @@
 
           <div class="card" id="adminPanel" hidden>
             <h2>Administração</h2>
-            <button type="button" class="ghost icon-btn" id="toggleUserForm" aria-label="Adicionar usuário">
-              <span class="icon">➕</span>
-              <span>Adicionar usuário</span>
+            <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
+              <span class="icon">⚙️</span>
+              <span>Usuários</span>
             </button>
-            <form id="userForm" class="form" hidden>
-              <label>
-                Nome
-                <input type="text" id="newUserName" placeholder="Nome completo" required />
-              </label>
-              <label>
-                E-mail
-                <input type="email" id="newUserEmail" placeholder="email@empresa.com" required />
-              </label>
-              <label>
-                Usuário
-                <input type="text" id="newUserUsername" placeholder="usuario" required />
-              </label>
-              <label>
-                Senha
-                <input type="password" id="newUserPassword" placeholder="senha" required />
-              </label>
-              <label>
-                Perfil
-                <select id="newUserRole">
-                  <option value="user">Usuário</option>
-                  <option value="admin">Administrador</option>
-                </select>
-              </label>
-              <button type="submit">Adicionar usuário</button>
-            </form>
             <div class="users-list" id="usersList"></div>
           </div>
         </aside>
@@ -172,10 +147,64 @@
       </div>
     </div>
 
+    <div class="modal" id="userModal" hidden>
+      <div class="modal-content">
+        <h3>Novo usuário</h3>
+        <form id="userForm" class="form">
+          <label>
+            Nome
+            <input type="text" id="newUserName" placeholder="Nome completo" required />
+          </label>
+          <label>
+            E-mail
+            <input type="email" id="newUserEmail" placeholder="email@empresa.com" required />
+          </label>
+          <label>
+            Usuário
+            <input type="text" id="newUserUsername" placeholder="usuario" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="newUserPassword" placeholder="senha" required />
+          </label>
+          <label>
+            Perfil
+            <select id="newUserRole">
+              <option value="user">Usuário</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </label>
+          <div class="modal-actions">
+            <button type="button" class="ghost" id="userModalCancel">Cancelar</button>
+            <button type="submit">Adicionar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="privateModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3 id="privateTitle">Conversa privada</h3>
+          <button type="button" class="ghost" id="privateClose">Fechar</button>
+        </div>
+        <div id="privateMessages" class="chat-body"></div>
+        <form id="privateForm" class="chat-input">
+          <input
+            type="text"
+            id="privateInput"
+            placeholder="Digite sua mensagem..."
+            autocomplete="off"
+          />
+          <button type="submit">Enviar</button>
+        </form>
+      </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-21"></script>
-    <script src="./app.js?v=20260204-21"></script>
+    <script src="./firebase-config.js?v=20260204-25"></script>
+    <script src="./app.js?v=20260204-25"></script>
   </body>
 </html>

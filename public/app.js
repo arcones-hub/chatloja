@@ -26,7 +26,9 @@ const avatarCancel = document.getElementById("avatarCancel");
 const statusSelect = document.getElementById("statusSelect");
 const themeButtons = document.querySelectorAll(".theme-btn");
 const adminPanel = document.getElementById("adminPanel");
-const toggleUserForm = document.getElementById("toggleUserForm");
+const openUserModal = document.getElementById("openUserModal");
+const userModal = document.getElementById("userModal");
+const userModalCancel = document.getElementById("userModalCancel");
 const userForm = document.getElementById("userForm");
 const profileSettingsToggle = document.getElementById("profileSettingsToggle");
 const profileSettings = document.getElementById("profileSettings");
@@ -39,6 +41,12 @@ const usersList = document.getElementById("usersList");
 const usersStatusList = document.getElementById("usersStatusList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
+const privateModal = document.getElementById("privateModal");
+const privateTitle = document.getElementById("privateTitle");
+const privateMessages = document.getElementById("privateMessages");
+const privateForm = document.getElementById("privateForm");
+const privateInput = document.getElementById("privateInput");
+const privateClose = document.getElementById("privateClose");
 
 const authGate = document.getElementById("authGate");
 const authForm = document.getElementById("authForm");
@@ -50,12 +58,16 @@ let currentUser = null;
 let rooms = [];
 let currentRoomUnsub = null;
 let activityUnsub = null;
+let privateUnsub = null;
+let currentPrivateRoom = "";
+let currentPrivateName = "";
 
 const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
 let roomsRef = null;
 let usersRef = null;
 let serverTimestamp = null;
 let authReady = Promise.resolve();
+let privateRoomsRef = null;
 
 if (!firebaseReady) {
   userStatus.textContent = "Configure o Firebase em firebase-config.js";
@@ -69,6 +81,7 @@ if (firebaseReady) {
   const db = firebase.firestore(firebaseApp);
   roomsRef = db.collection("rooms");
   usersRef = db.collection("users");
+  privateRoomsRef = db.collection("privateRooms");
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
   if (firebase.auth) {
     const auth = firebase.auth(firebaseApp);
@@ -298,6 +311,7 @@ function renderUserPresenceList(snapshot) {
   snapshot.forEach((doc) => {
     const user = doc.data();
     if (!user?.name) return;
+    if (doc.id === currentUser?.usernameLower) return;
     const status = normalizePresenceStatus(user.status);
     const item = document.createElement("div");
     item.className = `presence-item presence-${status.key}`;
@@ -326,8 +340,106 @@ function renderUserPresenceList(snapshot) {
     info.appendChild(state);
     item.appendChild(avatar);
     item.appendChild(info);
+    item.addEventListener("click", () => {
+      openPrivateChat(doc.id, user.name);
+    });
     usersStatusList.appendChild(item);
   });
+}
+
+function buildPrivateRoomId(a, b) {
+  return [a, b].sort().join("__");
+}
+
+function appendPrivateMessage({ senderName, text, createdAt }) {
+  if (!privateMessages) return;
+  const item = document.createElement("div");
+  item.className = "message";
+
+  const header = document.createElement("div");
+  header.className = "message-header";
+
+  const name = document.createElement("span");
+  name.className = "message-name";
+  name.textContent = senderName;
+
+  const time = document.createElement("span");
+  time.className = "message-time";
+  const timestamp = createdAt?.toMillis ? createdAt.toMillis() : createdAt;
+  time.textContent = new Date(timestamp || Date.now()).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  const body = document.createElement("div");
+  body.className = "message-body";
+  body.textContent = text || "";
+
+  header.appendChild(name);
+  header.appendChild(time);
+  item.appendChild(header);
+  item.appendChild(body);
+  privateMessages.appendChild(item);
+  privateMessages.scrollTop = privateMessages.scrollHeight;
+}
+
+function openPrivateChat(targetId, targetName) {
+  if (!privateRoomsRef || !currentUser?.usernameLower) return;
+  if (targetId === currentUser.usernameLower) return;
+  currentPrivateRoom = buildPrivateRoomId(currentUser.usernameLower, targetId);
+  currentPrivateName = targetName;
+  if (privateTitle) privateTitle.textContent = `Conversa com ${targetName}`;
+  if (privateMessages) privateMessages.innerHTML = "";
+  if (privateModal) privateModal.hidden = false;
+  subscribePrivateRoom(currentPrivateRoom);
+}
+
+function closePrivateChat() {
+  if (privateModal) privateModal.hidden = true;
+  if (privateUnsub) {
+    privateUnsub();
+    privateUnsub = null;
+  }
+  currentPrivateRoom = "";
+  currentPrivateName = "";
+  if (privateMessages) privateMessages.innerHTML = "";
+}
+
+function subscribePrivateRoom(roomId) {
+  if (!privateRoomsRef) return;
+  if (privateUnsub) privateUnsub();
+  privateUnsub = privateRoomsRef
+    .doc(roomId)
+    .collection("messages")
+    .orderBy("createdAt")
+    .limitToLast(50)
+    .onSnapshot((snapshot) => {
+      if (!privateMessages) return;
+      privateMessages.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        appendPrivateMessage({
+          senderName: data.senderName,
+          text: data.text,
+          createdAt: data.createdAt
+        });
+      });
+    });
+}
+
+async function sendPrivateMessage(text) {
+  if (!privateRoomsRef || !currentPrivateRoom || !currentUser) return;
+  if (!text) return;
+  await authReady;
+  await privateRoomsRef
+    .doc(currentPrivateRoom)
+    .collection("messages")
+    .add({
+      senderName: currentUser.name,
+      senderEmail: currentUser.email || "",
+      text,
+      createdAt: serverTimestamp()
+    });
 }
 
 async function updateCurrentUserPresence(updates) {
@@ -582,6 +694,7 @@ async function updateRoomActivity(action) {
   const usernameKey = currentUser.usernameLower || currentUser.username?.toLowerCase() || "";
   if (!usernameKey) return;
   await authReady;
+  const profile = loadProfile();
   await roomsRef
     .doc(currentRoom)
     .collection("activity")
@@ -589,7 +702,8 @@ async function updateRoomActivity(action) {
     .set(
       {
         name: currentUser.name,
-        status: loadProfile().status || "online",
+        status: profile.status || "online",
+        avatar: profile.avatar || "",
         action,
         updatedAt: serverTimestamp()
       },
@@ -605,13 +719,15 @@ function renderRoomActivity(snapshot) {
     if (!data?.name) return;
     const status = normalizePresenceStatus(data.status || "offline");
     const item = document.createElement("div");
-    item.className = `room-activity-item ${status.key}`;
-    const dot = document.createElement("span");
-    dot.className = "room-activity-dot";
-    const text = document.createElement("span");
-    text.textContent = `${data.name}: ${data.action || ""}`.trim();
-    item.appendChild(dot);
-    item.appendChild(text);
+    item.className = `room-activity-avatar ${status.key}`;
+    if (data.avatar) {
+      const img = document.createElement("img");
+      img.src = data.avatar;
+      img.alt = `Foto de ${data.name}`;
+      item.appendChild(img);
+    } else {
+      item.textContent = getInitials(data.name);
+    }
     roomActivity.appendChild(item);
   });
 }
@@ -960,20 +1076,41 @@ if (userForm) {
         newUserUsername.value = "";
         newUserPassword.value = "";
         newUserRole.value = "user";
+        if (userModal) userModal.hidden = true;
       }
     })();
   });
 }
 
-if (toggleUserForm && userForm) {
-  toggleUserForm.addEventListener("click", () => {
-    userForm.hidden = !userForm.hidden;
+if (openUserModal && userModal) {
+  openUserModal.addEventListener("click", () => {
+    userModal.hidden = false;
+  });
+}
+
+if (userModalCancel && userModal) {
+  userModalCancel.addEventListener("click", () => {
+    userModal.hidden = true;
   });
 }
 
 if (profileSettingsToggle && profileSettings) {
   profileSettingsToggle.addEventListener("click", () => {
     profileSettings.hidden = !profileSettings.hidden;
+  });
+}
+
+if (privateClose) {
+  privateClose.addEventListener("click", () => closePrivateChat());
+}
+
+if (privateForm) {
+  privateForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const text = privateInput?.value.trim();
+    if (!text) return;
+    await sendPrivateMessage(text);
+    if (privateInput) privateInput.value = "";
   });
 }
 

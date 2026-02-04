@@ -59,7 +59,7 @@ body.theme-light .app-header {
   gap: 8px;
 }
 
-#toggleUserForm {
+#openUserModal {
   margin-bottom: 10px;
 }
 
@@ -335,7 +335,7 @@ body.theme-light .app-header {
   background: #0f172a;
   border-radius: 16px;
   padding: 18px;
-  width: min(90vw, 320px);
+  width: min(90vw, 520px);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -529,39 +529,40 @@ button.ghost {
   max-width: 55%;
 }
 
-.room-activity-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #0f172a;
-  border: 1px solid #1e293b;
-  font-size: 11px;
-  color: #e2e8f0;
-}
-
-.room-activity-dot {
-  width: 8px;
-  height: 8px;
+.room-activity-avatar {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #94a3b8;
+  border: 2px solid #94a3b8;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
 }
 
-.room-activity-item.online .room-activity-dot {
-  background: #22c55e;
+.room-activity-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.room-activity-item.busy .room-activity-dot {
-  background: #ef4444;
+.room-activity-avatar.online {
+  border-color: #22c55e;
 }
 
-.room-activity-item.away .room-activity-dot {
-  background: #f59e0b;
+.room-activity-avatar.busy {
+  border-color: #ef4444;
 }
 
-.room-activity-item.offline .room-activity-dot {
-  background: #94a3b8;
+.room-activity-avatar.away {
+  border-color: #f59e0b;
+}
+
+.room-activity-avatar.offline {
+  border-color: #94a3b8;
 }
 
 .chat-body {
