@@ -261,6 +261,13 @@ button.ghost {
   font-size: 14px;
 }
 
+.message-gif {
+  margin-top: 8px;
+  max-width: 260px;
+  border-radius: 8px;
+  border: 1px solid #c7ddff;
+}
+
 .chat-input {
   display: flex;
   gap: 12px;
@@ -274,6 +281,44 @@ button.ghost {
   border-radius: 8px;
   border: 1px solid #7aa8e6;
   padding: 10px 12px;
+  background: #ffffff;
+}
+
+.message-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 20px 16px;
+  background: #f1f7ff;
+  border-top: 1px dashed #c7ddff;
+}
+
+.emoji-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.emoji-btn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #c7ddff;
+  background: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.gif-input {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.gif-input input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #7aa8e6;
   background: #ffffff;
 }
 

@@ -356,6 +356,13 @@ button.ghost {
   color: #e2e8f0;
 }
 
+.message-gif {
+  margin-top: 8px;
+  max-width: 260px;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+}
+
 .chat-input {
   display: flex;
   padding: 16px;
@@ -369,6 +376,45 @@ button.ghost {
   border: 1px solid #1e293b;
   border-radius: 10px;
   padding: 10px 12px;
+  color: #e2e8f0;
+}
+
+.message-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 0 16px 16px;
+  border-top: 1px dashed #1e293b;
+}
+
+.emoji-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.emoji-btn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+  font-size: 16px;
+  cursor: pointer;
+  color: #e2e8f0;
+}
+
+.gif-input {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.gif-input input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 8px 10px;
   color: #e2e8f0;
 }
 

@@ -29,6 +29,10 @@ const newUserRole = document.getElementById("newUserRole");
 const usersList = document.getElementById("usersList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
+const messageTools = document.getElementById("messageTools");
+const emojiButtons = document.querySelectorAll(".emoji-btn");
+const gifInput = document.getElementById("gifInput");
+const gifClearBtn = document.getElementById("gifClearBtn");
 
 const authGate = document.getElementById("authGate");
 const authForm = document.getElementById("authForm");
@@ -48,8 +52,8 @@ let serverTimestamp = null;
 if (!firebaseReady) {
   userStatus.textContent = "Configure o Firebase em firebase-config.js";
   disableChat();
-  loginForm.querySelector("button").disabled = true;
-  roomForm.querySelector("button").disabled = true;
+  if (loginForm) loginForm.querySelector("button").disabled = true;
+  if (roomForm) roomForm.querySelector("button").disabled = true;
 }
 
 if (firebaseReady) {
@@ -196,7 +200,7 @@ function applyProfileSettings(settings) {
 
 function setLoggedIn(user) {
   currentUser = user;
-  loginForm.hidden = true;
+  if (loginForm) loginForm.hidden = true;
   profileView.hidden = false;
   profileName.textContent = user.name;
   profileEmail.textContent = user.email || "";
@@ -209,7 +213,7 @@ function setLoggedIn(user) {
 
 function setLoggedOut() {
   currentUser = null;
-  loginForm.hidden = true;
+  if (loginForm) loginForm.hidden = true;
   profileView.hidden = true;
   userStatus.textContent = "";
   leaveCurrentRoom();
@@ -247,7 +251,7 @@ function renderRooms() {
   });
 }
 
-function appendMessage({ senderName, text, createdAt, system }) {
+function appendMessage({ senderName, text, createdAt, system, gifUrl }) {
   const item = document.createElement("div");
   item.className = system ? "message system" : "message";
 
@@ -270,6 +274,16 @@ function appendMessage({ senderName, text, createdAt, system }) {
   body.className = "message-body";
   body.textContent = text;
 
+  if (gifUrl) {
+    const gif = document.createElement("img");
+    gif.src = gifUrl;
+    gif.alt = "GIF";
+    gif.className = "message-gif";
+    gif.loading = "lazy";
+    body.appendChild(document.createElement("br"));
+    body.appendChild(gif);
+  }
+
   header.appendChild(name);
   header.appendChild(time);
   item.appendChild(header);
@@ -287,6 +301,9 @@ function enableChat(room) {
   roomSubtitle.textContent = "Histórico das últimas mensagens";
   messageInput.disabled = false;
   messageForm.querySelector("button").disabled = false;
+  if (gifInput) gifInput.disabled = false;
+  if (gifClearBtn) gifClearBtn.disabled = false;
+  emojiButtons.forEach((button) => (button.disabled = false));
 }
 
 function disableChat() {
@@ -294,6 +311,9 @@ function disableChat() {
   roomSubtitle.textContent = "";
   messageInput.disabled = true;
   messageForm.querySelector("button").disabled = true;
+  if (gifInput) gifInput.disabled = true;
+  if (gifClearBtn) gifClearBtn.disabled = true;
+  emojiButtons.forEach((button) => (button.disabled = true));
 }
 
 function joinRoom(room) {
@@ -340,7 +360,8 @@ function subscribeToRoom(room) {
           senderName: data.senderName,
           text: data.text,
           createdAt: data.createdAt,
-          system: data.system
+          system: data.system,
+          gifUrl: data.gifUrl
         });
       });
     });
@@ -349,6 +370,7 @@ function subscribeToRoom(room) {
 async function sendMessage(text) {
   if (!firebaseReady) return;
   if (!currentRoom || !currentUser) return;
+  const gifUrl = gifInput?.value.trim();
   await roomsRef
     .doc(currentRoom)
     .collection("messages")
@@ -356,6 +378,7 @@ async function sendMessage(text) {
       senderName: currentUser.name,
       senderEmail: currentUser.email || "",
       text,
+      gifUrl: gifUrl || "",
       system: false,
       createdAt: serverTimestamp()
     });
@@ -520,16 +543,18 @@ function setLogoutButtonsVisible(isVisible) {
   });
 }
 
-loginForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  if (authGate && !authGate.hidden) return;
-  const name = document.getElementById("nameInput").value.trim();
-  const email = document.getElementById("emailInput").value.trim();
-  if (!name) return;
-  const user = { name, email };
-  saveUser(user);
-  setLoggedIn(user);
-});
+if (loginForm) {
+  loginForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (authGate && !authGate.hidden) return;
+    const name = document.getElementById("nameInput").value.trim();
+    const email = document.getElementById("emailInput").value.trim();
+    if (!name) return;
+    const user = { name, email };
+    saveUser(user);
+    setLoggedIn(user);
+  });
+}
 
 if (authForm) {
   authForm.addEventListener("submit", (event) => {
@@ -550,6 +575,21 @@ if (authForm) {
     handleAuthSuccess(found);
     authUserInput.value = "";
     authPassInput.value = "";
+  });
+}
+
+emojiButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (messageInput.disabled) return;
+    const emoji = button.dataset.emoji || "";
+    messageInput.value += emoji;
+    messageInput.focus();
+  });
+});
+
+if (gifClearBtn) {
+  gifClearBtn.addEventListener("click", () => {
+    if (gifInput) gifInput.value = "";
   });
 }
 
@@ -615,24 +655,27 @@ logoutButtons.forEach((button) => {
   button.addEventListener("click", () => setLoggedOut());
 });
 
-roomForm.addEventListener("submit", (event) => {
+roomForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!firebaseReady || !isAdmin()) return;
   const value = roomInput.value.trim().toLowerCase();
   if (!value) return;
   if (!rooms.includes(value)) {
-    ensureRoom(value);
+    await ensureRoom(value);
   }
   roomInput.value = "";
+  joinRoom(value);
 });
 
 messageForm.addEventListener("submit", (event) => {
   event.preventDefault();
   if (!firebaseReady) return;
   const text = messageInput.value.trim();
-  if (!text || !currentRoom || !currentUser) return;
+  const gifUrl = gifInput?.value.trim();
+  if ((!text && !gifUrl) || !currentRoom || !currentUser) return;
   sendMessage(text);
   messageInput.value = "";
+  if (gifInput) gifInput.value = "";
 });
 
 async function bootstrapRooms() {
@@ -645,7 +688,7 @@ async function bootstrapRooms() {
 
 bootstrapRooms();
 
-loginForm.hidden = true;
+if (loginForm) loginForm.hidden = true;
 setLogoutButtonsVisible(false);
 updateAdminUi();
 const savedAuth = loadAuth();
