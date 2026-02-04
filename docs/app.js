@@ -417,6 +417,9 @@ async function listenRooms() {
       rooms = [];
     }
     renderRooms();
+    if (!currentRoom && rooms.length > 0) {
+      joinRoom(rooms[0]);
+    }
   });
 }
 
