@@ -417,7 +417,7 @@ button.ghost {
 
 .message-gif {
   margin-top: 8px;
-  max-width: 260px;
+  max-width: 100%;
   border-radius: 8px;
   border: 1px solid #1e293b;
 }
@@ -484,5 +484,32 @@ button.ghost {
 @media (max-width: 900px) {
   .layout {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  #app {
+    padding: 24px 16px 32px;
+  }
+
+  .chat-input {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gif-url {
+    flex-direction: column;
+  }
+
+  .user-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 }
