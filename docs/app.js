@@ -29,15 +29,6 @@ const newUserRole = document.getElementById("newUserRole");
 const usersList = document.getElementById("usersList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
-const messageTools = document.getElementById("messageTools");
-const togglePickerBtn = document.getElementById("togglePickerBtn");
-const pickerSearch = document.getElementById("pickerSearch");
-const pickerTabs = document.querySelectorAll(".picker-tab");
-const pickerGrid = document.getElementById("pickerGrid");
-const gifUrlRow = document.getElementById("gifUrlRow");
-const gifInput = document.getElementById("gifInput");
-const gifSendBtn = document.getElementById("gifSendBtn");
-const gifClearBtn = document.getElementById("gifClearBtn");
 
 const authGate = document.getElementById("authGate");
 const authForm = document.getElementById("authForm");
@@ -54,6 +45,7 @@ const firebaseReady = Boolean(window.firebaseConfig?.apiKey);
 let roomsRef = null;
 let usersRef = null;
 let serverTimestamp = null;
+let authReady = Promise.resolve();
 
 if (!firebaseReady) {
   userStatus.textContent = "Configure o Firebase em firebase-config.js";
@@ -68,6 +60,13 @@ if (firebaseReady) {
   roomsRef = db.collection("rooms");
   usersRef = db.collection("users");
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
+  if (firebase.auth) {
+    const auth = firebase.auth(firebaseApp);
+    authReady = auth.signInAnonymously().catch((error) => {
+      console.error(error);
+      userStatus.textContent = "Falha na autenticação anônima do Firebase.";
+    });
+  }
 }
 
 const defaultAdmin = {
@@ -86,30 +85,6 @@ const defaultProfile = {
   avatar: ""
 };
 
-const emojiList = [
-  "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😍", "😘",
-  "😎", "🤩", "😭", "😡", "👍", "👎", "🙏", "👏", "🔥", "🎉", "❤️", "💡",
-  "💯", "✨", "😴", "😮", "😱", "🤔", "🙌", "🥳", "🤝", "✅", "❌", "⚡"
-];
-
-const stickerList = ["😺", "🐶", "🦊", "🐼", "🐸", "🦄", "🐵", "🐧", "🐯", "🐰", "🐻", "🐨"];
-
-const gifList = [
-  { url: "https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif", tag: "aplausos" },
-  { url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", tag: "ok" },
-  { url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", tag: "feliz" },
-  { url: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif", tag: "surpreso" },
-  { url: "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif", tag: "dança" },
-  { url: "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif", tag: "risada" },
-  { url: "https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif", tag: "obrigado" },
-  { url: "https://media.giphy.com/media/26tOZ42Mg6pbTUPHW/giphy.gif", tag: "cafe" },
-  { url: "https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif", tag: "wow" },
-  { url: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif", tag: "trabalho" },
-  { url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", tag: "joinha" },
-  { url: "https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif", tag: "tchau" }
-];
-
-let activePickerTab = "emoji";
 
 function saveUser(user) {
   localStorage.setItem("chatUser", JSON.stringify(user));
@@ -275,7 +250,7 @@ function renderRooms() {
   });
 }
 
-function appendMessage({ senderName, text, createdAt, system, gifUrl, sticker }) {
+function appendMessage({ senderName, text, createdAt, system }) {
   const item = document.createElement("div");
   item.className = system ? "message system" : "message";
 
@@ -300,23 +275,6 @@ function appendMessage({ senderName, text, createdAt, system, gifUrl, sticker })
     body.textContent = text;
   }
 
-  if (sticker) {
-    const stickerEl = document.createElement("span");
-    stickerEl.className = "message-sticker";
-    stickerEl.textContent = sticker;
-    body.appendChild(stickerEl);
-  }
-
-  if (gifUrl) {
-    const gif = document.createElement("img");
-    gif.src = gifUrl;
-    gif.alt = "GIF";
-    gif.className = "message-gif";
-    gif.loading = "lazy";
-    body.appendChild(document.createElement("br"));
-    body.appendChild(gif);
-  }
-
   header.appendChild(name);
   header.appendChild(time);
   item.appendChild(header);
@@ -334,11 +292,6 @@ function enableChat(room) {
   roomSubtitle.textContent = "Histórico das últimas mensagens";
   messageInput.disabled = false;
   messageForm.querySelector("button").disabled = false;
-  if (togglePickerBtn) togglePickerBtn.disabled = false;
-  if (pickerSearch) pickerSearch.disabled = false;
-  if (gifInput) gifInput.disabled = false;
-  if (gifSendBtn) gifSendBtn.disabled = false;
-  if (gifClearBtn) gifClearBtn.disabled = false;
 }
 
 function disableChat() {
@@ -346,16 +299,14 @@ function disableChat() {
   roomSubtitle.textContent = "";
   messageInput.disabled = true;
   messageForm.querySelector("button").disabled = true;
-  if (togglePickerBtn) togglePickerBtn.disabled = true;
-  if (pickerSearch) pickerSearch.disabled = true;
-  if (gifInput) gifInput.disabled = true;
-  if (gifSendBtn) gifSendBtn.disabled = true;
-  if (gifClearBtn) gifClearBtn.disabled = true;
 }
 
 function joinRoom(room) {
   if (!firebaseReady) return;
   if (!currentUser) return;
+  if (!isAdmin() && Array.isArray(currentUser.rooms) && !currentUser.rooms.includes(room)) {
+    return;
+  }
   if (currentRoom === room) return;
   leaveCurrentRoom();
   currentRoom = room;
@@ -397,37 +348,38 @@ function subscribeToRoom(room) {
           senderName: data.senderName,
           text: data.text,
           createdAt: data.createdAt,
-          system: data.system,
-          gifUrl: data.gifUrl,
-          sticker: data.sticker
+          system: data.system
         });
       });
     });
 }
 
-async function sendMessage(text, options = {}) {
+async function sendMessage(text) {
   if (!firebaseReady) return;
   if (!currentRoom || !currentUser) return;
-  const gifUrl = options.gifUrl ?? gifInput?.value.trim();
-  const sticker = options.sticker || "";
-  if (!text && !gifUrl && !sticker) return;
-  await roomsRef
-    .doc(currentRoom)
-    .collection("messages")
-    .add({
-      senderName: currentUser.name,
-      senderEmail: currentUser.email || "",
-      text,
-      gifUrl: gifUrl || "",
-      sticker,
-      system: false,
-      createdAt: serverTimestamp()
-    });
+  if (!text) return;
+  try {
+    await authReady;
+    await roomsRef
+      .doc(currentRoom)
+      .collection("messages")
+      .add({
+        senderName: currentUser.name,
+        senderEmail: currentUser.email || "",
+        text,
+        system: false,
+        createdAt: serverTimestamp()
+      });
+  } catch (error) {
+    alert("Falha ao enviar mensagem. Verifique permissões do Firestore.");
+    console.error(error);
+  }
 }
 
 async function sendSystemMessage(text) {
   if (!firebaseReady) return;
   if (!currentRoom) return;
+  await authReady;
   await roomsRef
     .doc(currentRoom)
     .collection("messages")
@@ -442,6 +394,7 @@ async function sendSystemMessage(text) {
 
 async function ensureRoom(name) {
   if (!firebaseReady) return;
+  await authReady;
   await roomsRef.doc(name).set(
     {
       name,
@@ -451,10 +404,18 @@ async function ensureRoom(name) {
   );
 }
 
-function listenRooms() {
+async function listenRooms() {
   if (!firebaseReady) return;
+  await authReady;
   roomsRef.orderBy("name").onSnapshot((snapshot) => {
-    rooms = snapshot.docs.map((doc) => doc.id);
+    const allRooms = snapshot.docs.map((doc) => doc.id);
+    if (isAdmin() || !currentUser) {
+      rooms = allRooms;
+    } else if (Array.isArray(currentUser.rooms)) {
+      rooms = allRooms.filter((room) => currentUser.rooms.includes(room));
+    } else {
+      rooms = [];
+    }
     renderRooms();
   });
 }
@@ -487,73 +448,9 @@ function handleAuthSuccess(user) {
   hideAuthGate();
   if (authError) authError.hidden = true;
   saveAuth(user);
-  saveUser({ name: user.name, email: user.email, role: user.role });
-  setLoggedIn({ name: user.name, email: user.email, role: user.role });
-}
-
-function setActivePickerTab(tab) {
-  activePickerTab = tab;
-  pickerTabs.forEach((button) => {
-    button.classList.toggle("active", button.dataset.tab === tab);
-  });
-  if (gifUrlRow) gifUrlRow.hidden = tab !== "gif";
-  renderPicker();
-}
-
-function renderPicker() {
-  if (!pickerGrid) return;
-  const search = pickerSearch?.value.trim().toLowerCase() || "";
-  pickerGrid.innerHTML = "";
-
-  if (activePickerTab === "emoji") {
-    emojiList
-      .filter((emoji) => (search ? emoji.includes(search) : true))
-      .forEach((emoji) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "picker-item";
-        btn.textContent = emoji;
-        btn.addEventListener("click", () => {
-          if (messageInput.disabled) return;
-          messageInput.value += emoji;
-          messageInput.focus();
-        });
-        pickerGrid.appendChild(btn);
-      });
-  }
-
-  if (activePickerTab === "sticker") {
-    stickerList
-      .filter((sticker) => (search ? sticker.includes(search) : true))
-      .forEach((sticker) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "picker-item";
-        btn.textContent = sticker;
-        btn.addEventListener("click", () => {
-          sendMessage("", { sticker });
-        });
-        pickerGrid.appendChild(btn);
-      });
-  }
-
-  if (activePickerTab === "gif") {
-    gifList
-      .filter((gif) => (search ? gif.tag.includes(search) : true))
-      .forEach((gif) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "picker-item";
-        const img = document.createElement("img");
-        img.src = gif.url;
-        img.alt = gif.tag;
-        btn.appendChild(img);
-        btn.addEventListener("click", () => {
-          sendMessage("", { gifUrl: gif.url });
-        });
-        pickerGrid.appendChild(btn);
-      });
-  }
+  saveUser({ name: user.name, email: user.email, role: user.role, rooms: user.rooms || [] });
+  setLoggedIn({ name: user.name, email: user.email, role: user.role, rooms: user.rooms || [] });
+  listenRooms();
 }
 
 function isAdmin() {
@@ -565,6 +462,7 @@ function updateAdminUi() {
   if (adminPanel) adminPanel.hidden = !admin;
   if (roomInput) roomInput.disabled = !admin;
   if (roomForm) roomForm.querySelector("button").disabled = !admin;
+  if (roomForm) roomForm.hidden = !admin;
   if (!admin && usersList) {
     usersList.innerHTML = "";
   }
@@ -615,6 +513,7 @@ function renderUsersFromSnapshot(snapshot) {
 async function addUser(user) {
   if (!firebaseReady || !usersRef) return false;
   try {
+    await authReady;
     const usernameLower = user.username.toLowerCase();
     const emailLower = user.email.toLowerCase();
     const existingUsername = await usersRef.doc(usernameLower).get();
@@ -629,6 +528,7 @@ async function addUser(user) {
     }
     await usersRef.doc(usernameLower).set({
       ...user,
+      rooms: Array.isArray(user.rooms) ? user.rooms : rooms.slice(),
       usernameLower,
       emailLower,
       createdAt: serverTimestamp()
@@ -645,11 +545,13 @@ async function addUser(user) {
 async function removeUser(username) {
   if (!firebaseReady || !usersRef) return;
   if (username === "admin") return;
+  await authReady;
   await usersRef.doc(username).delete();
 }
 
 async function showUserPassword(username) {
   if (!firebaseReady || !usersRef) return;
+  await authReady;
   const snapshot = await usersRef.doc(username).get();
   if (!snapshot.exists) return;
   const target = snapshot.data();
@@ -658,6 +560,7 @@ async function showUserPassword(username) {
 
 async function updateUserPassword(username) {
   if (!firebaseReady || !usersRef) return;
+  await authReady;
   const snapshot = await usersRef.doc(username).get();
   if (!snapshot.exists) return;
   const target = snapshot.data();
@@ -670,6 +573,7 @@ async function deleteRoom(room) {
   if (!isAdmin()) return;
   if (!confirm(`Excluir a sala "${room}"?`)) return;
   if (!firebaseReady) return;
+  await authReady;
 
   if (currentRoom === room) {
     leaveCurrentRoom();
@@ -714,6 +618,7 @@ if (authForm) {
     (async () => {
       try {
         if (!firebaseReady || !usersRef) return;
+        await authReady;
         const loginId = username.toLowerCase();
         let foundSnapshot = await usersRef
           .where("usernameLower", "==", loginId)
@@ -747,7 +652,18 @@ if (authForm) {
             emailLower: found.email?.toLowerCase() || ""
           });
         }
-        handleAuthSuccess(found);
+        let userRooms = Array.isArray(found.rooms) ? found.rooms : [];
+        if (userRooms.length === 0) {
+          userRooms = roomsSeed.slice();
+          await foundDoc.ref.update({ rooms: userRooms });
+        }
+        const userData = {
+          name: found.name,
+          email: found.email,
+          role: found.role,
+          rooms: userRooms
+        };
+        handleAuthSuccess(userData);
         authUserInput.value = "";
         authPassInput.value = "";
       } catch (error) {
@@ -758,36 +674,6 @@ if (authForm) {
   });
 }
 
-if (togglePickerBtn) {
-  togglePickerBtn.addEventListener("click", () => {
-    if (!messageTools) return;
-    messageTools.hidden = !messageTools.hidden;
-    renderPicker();
-  });
-}
-
-if (pickerSearch) {
-  pickerSearch.addEventListener("input", () => renderPicker());
-}
-
-pickerTabs.forEach((button) => {
-  button.addEventListener("click", () => setActivePickerTab(button.dataset.tab));
-});
-
-if (gifSendBtn) {
-  gifSendBtn.addEventListener("click", () => {
-    const url = gifInput?.value.trim();
-    if (!url) return;
-    sendMessage("", { gifUrl: url });
-    gifInput.value = "";
-  });
-}
-
-if (gifClearBtn) {
-  gifClearBtn.addEventListener("click", () => {
-    if (gifInput) gifInput.value = "";
-  });
-}
 
 if (userForm) {
   userForm.addEventListener("submit", (event) => {
@@ -798,7 +684,8 @@ if (userForm) {
       email: newUserEmail.value.trim(),
       username: newUserUsername.value.trim(),
       password: newUserPassword.value,
-      role: newUserRole.value
+      role: newUserRole.value,
+      rooms: rooms.slice()
     };
     if (!user.name || !user.email || !user.username || !user.password) return;
     (async () => {
@@ -864,19 +751,18 @@ roomForm.addEventListener("submit", async (event) => {
   joinRoom(value);
 });
 
-messageForm.addEventListener("submit", (event) => {
+messageForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!firebaseReady) return;
   const text = messageInput.value.trim();
-  const gifUrl = gifInput?.value.trim();
-  if ((!text && !gifUrl) || !currentRoom || !currentUser) return;
-  sendMessage(text, { gifUrl });
+  if (!text || !currentRoom || !currentUser) return;
+  await sendMessage(text);
   messageInput.value = "";
-  if (gifInput) gifInput.value = "";
 });
 
 async function bootstrapRooms() {
   if (!firebaseReady) return;
+  await authReady;
   for (const room of roomsSeed) {
     await ensureRoom(room);
   }
@@ -897,9 +783,6 @@ if (firebaseReady) {
       }
     });
   }
-}
-if (messageTools) {
-  setActivePickerTab("emoji");
 }
 const savedAuth = loadAuth();
 showAuthGate();
