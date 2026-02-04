@@ -1226,7 +1226,6 @@ if (typeof registerForm !== 'undefined' && registerForm) {
       console.error(error);
     }
   });
-})
 
 if (userForm) {
   userForm.addEventListener("submit", (event) => {
