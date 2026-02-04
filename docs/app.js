@@ -658,7 +658,6 @@ async function updateUserPassword(username) {
   if (!nextPassword) return;
   await usersRef.doc(username).update({ password: nextPassword });
 }
-}
 
 async function deleteRoom(room) {
   if (!isAdmin()) return;
