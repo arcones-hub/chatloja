@@ -18,11 +18,18 @@ const profileAvatarWrap = document.getElementById("profileAvatarWrap");
 const avatarInput = document.getElementById("avatarInput");
 const profileAvatar = document.getElementById("profileAvatar");
 const profileAvatarFallback = document.getElementById("profileAvatarFallback");
+const avatarModal = document.getElementById("avatarModal");
+const avatarCanvas = document.getElementById("avatarCanvas");
+const avatarZoom = document.getElementById("avatarZoom");
+const avatarSave = document.getElementById("avatarSave");
+const avatarCancel = document.getElementById("avatarCancel");
 const statusSelect = document.getElementById("statusSelect");
 const themeButtons = document.querySelectorAll(".theme-btn");
 const adminPanel = document.getElementById("adminPanel");
 const toggleUserForm = document.getElementById("toggleUserForm");
 const userForm = document.getElementById("userForm");
+const profileSettingsToggle = document.getElementById("profileSettingsToggle");
+const profileSettings = document.getElementById("profileSettings");
 const newUserName = document.getElementById("newUserName");
 const newUserEmail = document.getElementById("newUserEmail");
 const newUserUsername = document.getElementById("newUserUsername");
@@ -88,6 +95,9 @@ const defaultProfile = {
   theme: "blue",
   avatar: ""
 };
+
+let avatarImage = null;
+let avatarScale = 1;
 
 
 function saveUser(user) {
@@ -197,6 +207,51 @@ function applyProfileSettings(settings) {
   applyTheme(settings.theme);
   applyStatus(statusValue);
   applyAvatar(settings.avatar, currentUser?.name);
+}
+
+function applyAvatarFromDataUrl(dataUrl) {
+  const settings = loadProfile();
+  settings.avatar = dataUrl;
+  saveProfile(settings);
+  applyAvatar(settings.avatar, currentUser?.name);
+  updateCurrentUserPresence({ avatar: settings.avatar || "" });
+}
+
+function drawAvatarCanvas() {
+  if (!avatarCanvas || !avatarImage) return;
+  const ctx = avatarCanvas.getContext("2d");
+  if (!ctx) return;
+  const size = avatarCanvas.width;
+  ctx.clearRect(0, 0, size, size);
+  const baseScale = Math.max(size / avatarImage.width, size / avatarImage.height);
+  const finalScale = baseScale * avatarScale;
+  const drawWidth = avatarImage.width * finalScale;
+  const drawHeight = avatarImage.height * finalScale;
+  const dx = (size - drawWidth) / 2;
+  const dy = (size - drawHeight) / 2;
+  ctx.drawImage(avatarImage, dx, dy, drawWidth, drawHeight);
+}
+
+function openAvatarEditor(file) {
+  if (!avatarModal || !avatarCanvas || !avatarZoom) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    avatarImage = new Image();
+    avatarImage.onload = () => {
+      avatarScale = 1;
+      avatarZoom.value = "1";
+      drawAvatarCanvas();
+      avatarModal.hidden = false;
+    };
+    avatarImage.src = String(reader.result || "");
+  };
+  reader.readAsDataURL(file);
+}
+
+function closeAvatarEditor() {
+  if (!avatarModal) return;
+  avatarModal.hidden = true;
+  avatarImage = null;
 }
 
 function updateProfilePresenceRing(status) {
@@ -916,6 +971,12 @@ if (toggleUserForm && userForm) {
   });
 }
 
+if (profileSettingsToggle && profileSettings) {
+  profileSettingsToggle.addEventListener("click", () => {
+    profileSettings.hidden = !profileSettings.hidden;
+  });
+}
+
 if (statusSelect) {
   statusSelect.addEventListener("change", () => {
     const settings = loadProfile();
@@ -940,15 +1001,31 @@ if (avatarInput) {
   avatarInput.addEventListener("change", () => {
     const file = avatarInput.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const settings = loadProfile();
-      settings.avatar = String(reader.result || "");
-      saveProfile(settings);
-      applyAvatar(settings.avatar, currentUser?.name);
-      updateCurrentUserPresence({ avatar: settings.avatar || "" });
-    };
-    reader.readAsDataURL(file);
+    openAvatarEditor(file);
+  });
+}
+
+if (avatarZoom) {
+  avatarZoom.addEventListener("input", () => {
+    avatarScale = Number(avatarZoom.value);
+    drawAvatarCanvas();
+  });
+}
+
+if (avatarSave) {
+  avatarSave.addEventListener("click", () => {
+    if (!avatarCanvas) return;
+    const dataUrl = avatarCanvas.toDataURL("image/png");
+    applyAvatarFromDataUrl(dataUrl);
+    closeAvatarEditor();
+    if (avatarInput) avatarInput.value = "";
+  });
+}
+
+if (avatarCancel) {
+  avatarCancel.addEventListener("click", () => {
+    closeAvatarEditor();
+    if (avatarInput) avatarInput.value = "";
   });
 }
 

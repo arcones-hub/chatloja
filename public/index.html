@@ -47,31 +47,35 @@
                   <input type="file" id="avatarInput" accept="image/*" aria-label="Alterar foto" />
                   <button type="button" class="avatar-edit-btn" aria-label="Editar foto">✏️</button>
                 </div>
-                <div>
+                <div class="profile-meta">
                   <p><strong id="profileName"></strong></p>
                   <p class="muted" id="profileEmail"></p>
                   <span class="status-badge" id="profileStatusBadge">Online</span>
                 </div>
+                <button type="button" class="settings-btn" id="profileSettingsToggle" aria-label="Configurações do perfil">⚙️</button>
               </div>
 
-              <label class="inline-field">
-                Status
-                <select id="statusSelect">
-                  <option value="online">Online</option>
-                  <option value="ocupado">Ocupado</option>
-                  <option value="ausente">Ausente</option>
-                  <option value="offline">Offline</option>
-                </select>
-              </label>
+              <div class="profile-settings" id="profileSettings" hidden>
+                <label class="inline-field">
+                  Status
+                  <select id="statusSelect">
+                    <option value="online">Online</option>
+                    <option value="ocupado">Ocupado</option>
+                    <option value="ausente">Ausente</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                </label>
 
-              <div class="inline-field">
-                Tema
-                <div class="theme-toggle" role="group" aria-label="Tema">
-                  <button type="button" class="theme-btn" data-theme="blue">Azul</button>
-                  <button type="button" class="theme-btn" data-theme="light">Branco</button>
+                <div class="inline-field">
+                  Tema
+                  <div class="theme-toggle" role="group" aria-label="Tema">
+                    <button type="button" class="theme-btn" data-theme="blue">Azul</button>
+                    <button type="button" class="theme-btn" data-theme="light">Branco</button>
+                  </div>
                 </div>
+
+                <button class="ghost logout-btn">Sair</button>
               </div>
-              <button class="ghost logout-btn">Sair</button>
             </div>
           </div>
 
@@ -94,7 +98,10 @@
 
           <div class="card" id="adminPanel" hidden>
             <h2>Administração</h2>
-            <button type="button" class="ghost" id="toggleUserForm">Novo usuário</button>
+            <button type="button" class="ghost icon-btn" id="toggleUserForm" aria-label="Adicionar usuário">
+              <span class="icon">➕</span>
+              <span>Adicionar usuário</span>
+            </button>
             <form id="userForm" class="form" hidden>
               <label>
                 Nome
@@ -150,10 +157,25 @@
       </section>
     </div>
 
+    <div class="modal" id="avatarModal" hidden>
+      <div class="modal-content">
+        <h3>Ajustar foto</h3>
+        <canvas id="avatarCanvas" width="240" height="240"></canvas>
+        <label class="modal-range">
+          Zoom
+          <input type="range" id="avatarZoom" min="1" max="3" step="0.01" value="1" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="ghost" id="avatarCancel">Cancelar</button>
+          <button type="button" id="avatarSave">Salvar</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-18"></script>
-    <script src="./app.js?v=20260204-18"></script>
+    <script src="./firebase-config.js?v=20260204-21"></script>
+    <script src="./app.js?v=20260204-21"></script>
   </body>
 </html>
