@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Interno</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="authGate" class="auth-gate" hidden>
+      <div class="auth-card">
+        <h2>Acesso</h2>
+        <p class="muted">Entre com usuário e senha para acessar o sistema.</p>
+        <form id="authForm" class="form">
+          <label>
+            Usuário
+            <input type="text" id="authUser" placeholder="ex: admin" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="authPass" placeholder="Sua senha" required />
+          </label>
+          <button type="submit" class="btn btn-primary">Entrar</button>
+          <div class="auth-error" id="authError" hidden>Usuário ou senha inválidos.</div>
+        </form>
+      </div>
+    </div>
+
+    <div id="app" hidden>
+      <header class="app-header">
+        <h1>Chat Interno</h1>
+        <div class="status" id="userStatus"></div>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <div class="card">
+            <h2>Perfil</h2>
+            <div class="profile" id="profileView" hidden>
+              <div class="profile-header">
+                <div class="avatar-editor" id="profileAvatarWrap">
+                  <div class="profile-avatar">
+                    <img id="profileAvatar" alt="Foto do perfil" hidden />
+                    <span id="profileAvatarFallback">A</span>
+                  </div>
+                  <input type="file" id="avatarInput" accept="image/*" aria-label="Alterar foto" />
+                  <button type="button" class="btn btn-ghost avatar-edit-btn" aria-label="Editar foto">✏️</button>
+                </div>
+                <div class="profile-meta">
+                  <p><strong id="profileName"></strong></p>
+                  <p class="muted" id="profileEmail"></p>
+                  <span class="status-badge" id="profileStatusBadge">Online</span>
+                </div>
+                <button type="button" class="btn btn-ghost settings-btn" id="profileSettingsToggle" aria-label="Configurações do perfil">⚙️</button>
+              </div>
+
+              <div class="profile-settings" id="profileSettings" hidden>
+                <label class="inline-field">
+                  Status
+                  <select id="statusSelect">
+                    <option value="online">Online</option>
+                    <option value="ocupado">Ocupado</option>
+                    <option value="ausente">Ausente</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                </label>
+
+                <div class="inline-field">
+                  Tema
+                  <div class="theme-toggle" role="group" aria-label="Tema">
+                    <button type="button" class="btn theme-btn" data-theme="blue">Azul</button>
+                    <button type="button" class="btn theme-btn" data-theme="light">Branco</button>
+                  </div>
+                </div>
+
+                <div class="admin-actions" id="adminActions" hidden>
+                  <button type="button" class="btn btn-ghost icon-btn" id="openAdminModal" aria-label="Administração">
+                    <span class="icon">🛠️</span>
+                    <span>Administração</span>
+                  </button>
+                </div>
+
+                <button class="btn btn-ghost logout-btn">Sair</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Salas</h2>
+            <div class="rooms" id="roomsList"></div>
+            <form id="roomForm" class="form">
+              <label>
+                Nova sala
+                <input type="text" id="roomInput" placeholder="ex: financeiro" />
+              </label>
+              <button type="submit" class="btn btn-primary">Criar</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>Usuários</h2>
+            <div class="presence-list" id="usersStatusList"></div>
+          </div>
+
+          <div class="card" id="adminPanel" hidden></div>
+        </aside>
+
+        <main class="chat">
+          <div class="chat-header">
+            <div>
+              <h2 id="roomTitle">Selecione uma sala</h2>
+              <p class="muted" id="roomSubtitle">Histórico das últimas mensagens</p>
+            </div>
+            <div class="room-activity" id="roomActivity"></div>
+          </div>
+
+          <div class="chat-body" id="messages"></div>
+
+          <form id="messageForm" class="chat-input">
+              <form id="messageForm" class="chat-input">
+                <!-- Emoji Icon -->
+                <button type="button" class="btn btn-ghost chat-emoji-btn" tabindex="-1" aria-label="Emoji">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                </button>
+                <!-- Input com ícones à direita -->
+                <div class="chat-input-wrap" style="position:relative; flex:1; display:flex; align-items:center;">
+                  <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Digite sua mensagem..."
+                    autocomplete="off"
+                    disabled
+                    style="padding-right:70px; padding-left:10px; width:100%;"
+                  />
+                  <span style="position:absolute; right:38px; top:50%; transform:translateY(-50%); cursor:pointer;">
+                    <!-- Microfone direito -->
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                  </span>
+                  <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); cursor:pointer;">
+                    <!-- Câmera -->
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V7a2 2 0 0 0-2-2h-3.17a2 2 0 0 1-1.41-.59l-1.83-1.83A2 2 0 0 0 12.17 2H11.83a2 2 0 0 0-1.41.59L8.59 4.41A2 2 0 0 1 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="4"/></svg>
+                  </span>
+                </div>
+                <!-- Microfone entre input e botão enviar -->
+                <button type="button" class="btn btn-ghost chat-mic-btn" tabindex="-1" aria-label="Microfone">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                </button>
+                <button type="submit" class="btn btn-primary" disabled>Enviar</button>
+              </form>
+          </form>
+        </main>
+      </section>
+    </div>
+
+    <div class="modal" id="avatarModal" hidden>
+      <div class="modal-content">
+        <h3>Ajustar foto</h3>
+        <canvas id="avatarCanvas" width="240" height="240"></canvas>
+        <label class="modal-range">
+          Zoom
+          <input type="range" id="avatarZoom" min="1" max="3" step="0.01" value="1" />
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="avatarCancel">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="avatarSave">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="userModal" hidden>
+      <div class="modal-content">
+        <h3>Novo usuário</h3>
+        <form id="userForm" class="form">
+          <label>
+            Nome
+            <input type="text" id="newUserName" placeholder="Nome completo" required />
+          </label>
+          <label>
+            E-mail
+            <input type="email" id="newUserEmail" placeholder="email@empresa.com" required />
+          </label>
+          <label>
+            Usuário
+            <input type="text" id="newUserUsername" placeholder="usuario" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" id="newUserPassword" placeholder="senha" required />
+          </label>
+          <label>
+            Perfil
+            <select id="newUserRole">
+              <option value="user">Usuário</option>
+              <option value="admin">Administrador</option>
+            </select>
+          </label>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-ghost" id="userModalCancel">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Adicionar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="adminModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3>Administração</h3>
+          <button type="button" class="btn btn-ghost" id="adminClose">Fechar</button>
+        </div>
+        <button type="button" class="btn btn-ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
+          <span class="icon">➕</span>
+          <span>Adicionar usuário</span>
+        </button>
+        <button type="button" class="btn btn-ghost icon-btn" id="openUsersModal" aria-label="Ver usuários">
+          <span class="icon">👥</span>
+          <span>Usuários</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="modal" id="usersModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3>Usuários</h3>
+          <button type="button" class="btn btn-ghost" id="usersClose">Fechar</button>
+        </div>
+        <div class="users-list" id="usersList"></div>
+      </div>
+    </div>
+
+    <div class="modal" id="privateModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3 id="privateTitle">Conversa privada</h3>
+          <button type="button" class="btn btn-ghost" id="privateClose">Fechar</button>
+        </div>
+        <div id="privateMessages" class="chat-body"></div>
+        <form id="privateForm" class="chat-input">
+          <input
+            type="text"
+            id="privateInput"
+            placeholder="Digite sua mensagem..."
+            autocomplete="off"
+          />
+          <button type="submit" class="btn btn-primary">Enviar</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="./firebase-config.js?v=20260204-30"></script>
+    <script src="./app.js?v=20260204-30"></script>
+  </body>
+</html>
