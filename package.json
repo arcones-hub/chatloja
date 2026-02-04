@@ -4,9 +4,13 @@
   "description": "Chat interno simples para comunicação com funcionários",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "tailwind": "tailwindcss -i ./chatloja/src/styles/tailwind.css -o ./chatloja/public/dist/output.css --watch"
   },
   "dependencies": {
     "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^4.1.18"
   }
 }
