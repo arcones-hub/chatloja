@@ -610,7 +610,6 @@ function renderUsersFromSnapshot(snapshot) {
 
     usersList.appendChild(row);
   });
-  });
 }
 async function addUser(user) {
   if (!firebaseReady || !usersRef) return false;
