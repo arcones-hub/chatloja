@@ -341,6 +341,8 @@ async function ensureAdminUser() {
   if (!snapshot.exists) {
     await docRef.set({
       ...defaultAdmin,
+      status: "offline",
+      avatar: "",
       createdAt: serverTimestamp()
     });
   } else {
@@ -348,6 +350,8 @@ async function ensureAdminUser() {
     const updates = {};
     if (!data.usernameLower) updates.usernameLower = data.username?.toLowerCase() || "admin";
     if (!data.emailLower) updates.emailLower = data.email?.toLowerCase() || defaultAdmin.email;
+    if (!data.status) updates.status = "offline";
+    if (data.avatar === undefined) updates.avatar = "";
     if (Object.keys(updates).length > 0) {
       await docRef.update(updates);
     }
@@ -863,7 +867,9 @@ if (authForm) {
           name: found.name,
           email: found.email,
           role: found.role,
-          rooms: userRooms
+          rooms: userRooms,
+          username: found.username || foundDoc.id,
+          usernameLower: found.usernameLower || found.username?.toLowerCase() || foundDoc.id
         };
         handleAuthSuccess(userData);
         authUserInput.value = "";
