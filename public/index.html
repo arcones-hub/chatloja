@@ -59,7 +59,7 @@
                 Status
                 <select id="statusSelect">
                   <option value="online">Online</option>
-                  <option value="ausente">Ausente</option>
+                  <option value="ocupado">Ocupado</option>
                   <option value="offline">Offline</option>
                 </select>
               </label>
@@ -85,6 +85,11 @@
               </label>
               <button type="submit">Criar</button>
             </form>
+          </div>
+
+          <div class="card">
+            <h2>Usuários</h2>
+            <div class="presence-list" id="usersStatusList"></div>
           </div>
 
           <div class="card" id="adminPanel" hidden>
@@ -146,7 +151,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-06"></script>
-    <script src="./app.js?v=20260204-06"></script>
+    <script src="./firebase-config.js?v=20260204-08"></script>
+    <script src="./app.js?v=20260204-08"></script>
   </body>
 </html>

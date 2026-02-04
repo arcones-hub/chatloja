@@ -26,6 +26,7 @@ const newUserUsername = document.getElementById("newUserUsername");
 const newUserPassword = document.getElementById("newUserPassword");
 const newUserRole = document.getElementById("newUserRole");
 const usersList = document.getElementById("usersList");
+const usersStatusList = document.getElementById("usersStatusList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
 
@@ -138,9 +139,11 @@ function applyTheme(theme) {
 
 function applyStatus(status) {
   if (!profileStatusBadge) return;
+  const normalized = status === "ausente" ? "ocupado" : status;
   profileStatusBadge.textContent =
-    status === "ausente" ? "Ausente" : status === "offline" ? "Offline" : "Online";
-  profileStatusBadge.classList.toggle("ausente", status === "ausente");
+    normalized === "ocupado" ? "Ocupado" : normalized === "offline" ? "Offline" : "Online";
+  profileStatusBadge.classList.toggle("ausente", normalized === "ocupado");
+  profileStatusBadge.classList.toggle("ocupado", normalized === "ocupado");
   profileStatusBadge.classList.toggle("offline", status === "offline");
   userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${profileStatusBadge.textContent}`;
 }
@@ -170,10 +173,104 @@ function applyAvatar(avatar, name) {
 }
 
 function applyProfileSettings(settings) {
-  if (statusSelect) statusSelect.value = settings.status;
+  const statusValue = settings.status === "ausente" ? "ocupado" : settings.status;
+  if (statusSelect) statusSelect.value = statusValue;
   applyTheme(settings.theme);
-  applyStatus(settings.status);
+  applyStatus(statusValue);
   applyAvatar(settings.avatar, currentUser?.name);
+}
+
+function normalizePresenceStatus(status) {
+  const value = (status || "").toLowerCase();
+  if (value === "online") {
+    return { key: "online", label: "Online" };
+  }
+  if (value === "ocupado" || value === "ausente") {
+    return { key: "busy", label: "Ocupado" };
+  }
+  return { key: "offline", label: "Offline" };
+}
+
+function getInitials(name) {
+  return name
+    ? name
+        .split(" ")
+        .map((part) => part[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "U";
+}
+
+function renderUserPresenceList(snapshot) {
+  if (!usersStatusList) return;
+  usersStatusList.innerHTML = "";
+  snapshot.forEach((doc) => {
+    const user = doc.data();
+    if (!user?.name) return;
+    const status = normalizePresenceStatus(user.status);
+    const item = document.createElement("div");
+    item.className = `presence-item presence-${status.key}`;
+
+    const avatar = document.createElement("div");
+    avatar.className = "presence-avatar";
+    if (user.avatar) {
+      const img = document.createElement("img");
+      img.src = user.avatar;
+      img.alt = `Foto de ${user.name}`;
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = getInitials(user.name);
+    }
+
+    const info = document.createElement("div");
+    info.className = "presence-info";
+    const name = document.createElement("div");
+    name.className = "presence-name";
+    name.textContent = user.name;
+    const state = document.createElement("div");
+    state.className = "presence-status";
+    state.textContent = status.label;
+
+    info.appendChild(name);
+    info.appendChild(state);
+    item.appendChild(avatar);
+    item.appendChild(info);
+    usersStatusList.appendChild(item);
+  });
+}
+
+async function updateCurrentUserPresence(updates) {
+  if (!firebaseReady || !usersRef) return;
+  if (!currentUser?.usernameLower) return;
+  try {
+    await authReady;
+    await usersRef.doc(currentUser.usernameLower).set(
+      {
+        ...updates,
+        updatedAt: serverTimestamp()
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function markCurrentUserOnline() {
+  const settings = loadProfile();
+  settings.status = "online";
+  saveProfile(settings);
+  if (statusSelect) statusSelect.value = "online";
+  applyStatus("online");
+  updateCurrentUserPresence({
+    status: "online",
+    avatar: settings.avatar || ""
+  });
+}
+
+function markCurrentUserOffline() {
+  updateCurrentUserPresence({ status: "offline" });
 }
 
 function setLoggedIn(user) {
@@ -190,6 +287,7 @@ function setLoggedIn(user) {
 }
 
 function setLoggedOut() {
+  markCurrentUserOffline();
   currentUser = null;
   if (loginForm) loginForm.hidden = true;
   profileView.hidden = true;
@@ -439,9 +537,18 @@ function showAuthError(message) {
 function handleAuthSuccess(user) {
   hideAuthGate();
   if (authError) authError.hidden = true;
-  saveAuth(user);
-  saveUser({ name: user.name, email: user.email, role: user.role, rooms: user.rooms || [] });
-  setLoggedIn({ name: user.name, email: user.email, role: user.role, rooms: user.rooms || [] });
+  const normalizedUser = {
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    rooms: user.rooms || [],
+    username: user.username || user.usernameLower || "",
+    usernameLower: user.usernameLower || user.username?.toLowerCase() || ""
+  };
+  saveAuth(normalizedUser);
+  saveUser(normalizedUser);
+  setLoggedIn(normalizedUser);
+  markCurrentUserOnline();
   listenRooms();
 }
 
@@ -520,6 +627,8 @@ async function addUser(user) {
     }
     await usersRef.doc(usernameLower).set({
       ...user,
+      status: "offline",
+      avatar: "",
       usernameLower,
       emailLower,
       createdAt: serverTimestamp()
@@ -693,6 +802,7 @@ if (statusSelect) {
     settings.status = statusSelect.value;
     saveProfile(settings);
     applyStatus(settings.status);
+    updateCurrentUserPresence({ status: settings.status });
   });
 }
 
@@ -716,6 +826,7 @@ if (avatarInput) {
       settings.avatar = String(reader.result || "");
       saveProfile(settings);
       applyAvatar(settings.avatar, currentUser?.name);
+      updateCurrentUserPresence({ avatar: settings.avatar || "" });
     };
     reader.readAsDataURL(file);
   });
@@ -761,11 +872,15 @@ if (firebaseReady) {
   ensureAdminUser();
   if (usersRef) {
     usersRef.orderBy("name").onSnapshot((snapshot) => {
+      renderUserPresenceList(snapshot);
       if (isAdmin()) {
         renderUsersFromSnapshot(snapshot);
       }
     });
   }
 }
+window.addEventListener("beforeunload", () => {
+  markCurrentUserOffline();
+});
 const savedAuth = loadAuth();
 showAuthGate();
