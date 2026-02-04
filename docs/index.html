@@ -31,7 +31,6 @@
       <header class="app-header">
         <h1>Chat Interno</h1>
         <div class="status" id="userStatus"></div>
-        <button class="ghost logout-btn" hidden>Sair</button>
       </header>
 
       <section class="layout">
@@ -75,6 +74,13 @@
                   </div>
                 </div>
 
+                <div class="admin-actions" id="adminActions" hidden>
+                  <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
+                    <span class="icon">➕</span>
+                    <span>Adicionar usuário</span>
+                  </button>
+                </div>
+
                 <button class="ghost logout-btn">Sair</button>
               </div>
             </div>
@@ -98,11 +104,7 @@
           </div>
 
           <div class="card" id="adminPanel" hidden>
-            <h2>Administração</h2>
-            <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
-              <span class="icon">⚙️</span>
-              <span>Usuários</span>
-            </button>
+            <h2>Usuários</h2>
             <div class="users-list" id="usersList"></div>
           </div>
         </aside>
@@ -204,7 +206,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-25"></script>
-    <script src="./app.js?v=20260204-25"></script>
+    <script src="./firebase-config.js?v=20260204-27"></script>
+    <script src="./app.js?v=20260204-27"></script>
   </body>
 </html>

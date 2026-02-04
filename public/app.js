@@ -32,6 +32,7 @@ const userModalCancel = document.getElementById("userModalCancel");
 const userForm = document.getElementById("userForm");
 const profileSettingsToggle = document.getElementById("profileSettingsToggle");
 const profileSettings = document.getElementById("profileSettings");
+const adminActions = document.getElementById("adminActions");
 const newUserName = document.getElementById("newUserName");
 const newUserEmail = document.getElementById("newUserEmail");
 const newUserUsername = document.getElementById("newUserUsername");
@@ -844,6 +845,7 @@ function updateAdminUi() {
   if (roomInput) roomInput.disabled = !admin;
   if (roomForm) roomForm.querySelector("button").disabled = !admin;
   if (roomForm) roomForm.hidden = !admin;
+  if (adminActions) adminActions.hidden = !admin;
   if (!admin && usersList) {
     usersList.innerHTML = "";
   }

@@ -19,6 +19,44 @@ body.theme-light .app-header {
   color: #0f172a;
 }
 
+body.theme-light .card,
+body.theme-light .chat,
+body.theme-light .chat-header,
+body.theme-light .chat-body,
+body.theme-light .message,
+body.theme-light .profile-settings,
+body.theme-light .presence-item,
+body.theme-light .user-row {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+
+body.theme-light .room-activity-avatar,
+body.theme-light .presence-avatar {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5f5;
+}
+
+body.theme-light .form input {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
+body.theme-light button {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+body.theme-light button.ghost,
+body.theme-light .settings-btn {
+  background: transparent;
+  color: #0f172a;
+  border-color: #e2e8f0;
+}
+
 #app {
   max-width: 1200px;
   margin: 0 auto;
@@ -141,13 +179,19 @@ body.theme-light .app-header {
   gap: 10px;
 }
 
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .profile-header .status-badge {
   display: none;
 }
 
 .profile-avatar {
-  width: 44px;
-  height: 44px;
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
   background: #1e293b;
   border: 1px solid #334155;
@@ -175,13 +219,13 @@ body.theme-light .app-header {
 }
 .avatar-editor {
   position: relative;
-  width: 44px;
-  height: 44px;
+  width: 66px;
+  height: 66px;
 }
 
 .avatar-editor .profile-avatar {
-  width: 44px;
-  height: 44px;
+  width: 66px;
+  height: 66px;
 }
 
 .avatar-editor input[type="file"] {
@@ -530,8 +574,8 @@ button.ghost {
 }
 
 .room-activity-avatar {
-  width: 28px;
-  height: 28px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 2px solid #94a3b8;
   background: #0f172a;
