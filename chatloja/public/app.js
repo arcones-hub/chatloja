@@ -1,3 +1,48 @@
+// Áudio: gravação e envio
+let mediaRecorder = null;
+let audioChunks = [];
+const micBtn = document.querySelector('.chat-mic-btn');
+
+if (micBtn) {
+  micBtn.addEventListener('click', async () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop();
+      micBtn.classList.remove('recording');
+      micBtn.title = 'Clique para gravar áudio';
+      return;
+    }
+    if (!navigator.mediaDevices?.getUserMedia) {
+      alert('Seu navegador não suporta gravação de áudio.');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new window.MediaRecorder(stream);
+      audioChunks = [];
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        // Envio do áudio como mensagem
+        if (audioBlob.size > 0 && currentRoom && currentUser) {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64Audio = reader.result;
+            await sendMessage(null, base64Audio); // null para texto, base64 para áudio
+            updateRoomActivity('enviou um áudio');
+          };
+          reader.readAsDataURL(audioBlob);
+        }
+      };
+      mediaRecorder.start();
+      micBtn.classList.add('recording');
+      micBtn.title = 'Gravando... clique para parar';
+    } catch (err) {
+      alert('Não foi possível acessar o microfone.');
+    }
+  });
+}
 
 const loginForm = document.getElementById("loginForm");
 const roomForm = document.getElementById("roomForm");
@@ -677,19 +722,26 @@ function subscribeToRoom(room) {
 async function sendMessage(text) {
   if (!firebaseReady) return;
   if (!currentRoom || !currentUser) return;
-  if (!text) return;
+  if (!text && arguments.length < 2) return;
   try {
     await authReady;
+    const data = {
+      senderName: currentUser.name,
+      senderEmail: currentUser.email || "",
+      system: false,
+      createdAt: serverTimestamp()
+    };
+    if (arguments.length > 1 && arguments[1]) {
+      data.type = 'audio';
+      data.audio = arguments[1];
+    } else {
+      data.type = 'text';
+      data.text = text;
+    }
     await roomsRef
       .doc(currentRoom)
       .collection("messages")
-      .add({
-        senderName: currentUser.name,
-        senderEmail: currentUser.email || "",
-        text,
-        system: false,
-        createdAt: serverTimestamp()
-      });
+      .add(data);
   } catch (error) {
     alert("Falha ao enviar mensagem. Verifique permissões do Firestore.");
     console.error(error);
