@@ -139,8 +139,7 @@ body:not(.theme-light) .chat-body {
 }
 
 .status {
-  font-size: 13px;
-  color: #e8f4ff;
+  display: none;
 }
 
 .layout {
@@ -221,18 +220,23 @@ button.ghost {
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: space-between;
 }
 
 .room {
+  flex: 1;
   background: var(--accent);
   color: var(--text);
   text-align: left;
   border: 1px solid var(--border);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 .room-delete {
-  padding: 6px 10px;
-  border-radius: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
   border: 1px solid #fca5a5;
   background: #fee2e2;
   color: #991b1b;

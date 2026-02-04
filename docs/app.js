@@ -33,6 +33,9 @@ const userForm = document.getElementById("userForm");
 const profileSettingsToggle = document.getElementById("profileSettingsToggle");
 const profileSettings = document.getElementById("profileSettings");
 const adminActions = document.getElementById("adminActions");
+const openAdminModal = document.getElementById("openAdminModal");
+const adminModal = document.getElementById("adminModal");
+const adminClose = document.getElementById("adminClose");
 const newUserName = document.getElementById("newUserName");
 const newUserEmail = document.getElementById("newUserEmail");
 const newUserUsername = document.getElementById("newUserUsername");
@@ -1099,6 +1102,18 @@ if (userModalCancel && userModal) {
 if (profileSettingsToggle && profileSettings) {
   profileSettingsToggle.addEventListener("click", () => {
     profileSettings.hidden = !profileSettings.hidden;
+  });
+}
+
+if (openAdminModal && adminModal) {
+  openAdminModal.addEventListener("click", () => {
+    adminModal.hidden = false;
+  });
+}
+
+if (adminClose && adminModal) {
+  adminClose.addEventListener("click", () => {
+    adminModal.hidden = true;
   });
 }
 

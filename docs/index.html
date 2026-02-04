@@ -75,9 +75,9 @@
                 </div>
 
                 <div class="admin-actions" id="adminActions" hidden>
-                  <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
-                    <span class="icon">➕</span>
-                    <span>Adicionar usuário</span>
+                  <button type="button" class="ghost icon-btn" id="openAdminModal" aria-label="Administração">
+                    <span class="icon">🛠️</span>
+                    <span>Administração</span>
                   </button>
                 </div>
 
@@ -103,10 +103,7 @@
             <div class="presence-list" id="usersStatusList"></div>
           </div>
 
-          <div class="card" id="adminPanel" hidden>
-            <h2>Usuários</h2>
-            <div class="users-list" id="usersList"></div>
-          </div>
+          <div class="card" id="adminPanel" hidden></div>
         </aside>
 
         <main class="chat">
@@ -184,6 +181,20 @@
       </div>
     </div>
 
+    <div class="modal" id="adminModal" hidden>
+      <div class="modal-content">
+        <div class="flex items-center justify-between">
+          <h3>Administração</h3>
+          <button type="button" class="ghost" id="adminClose">Fechar</button>
+        </div>
+        <button type="button" class="ghost icon-btn" id="openUserModal" aria-label="Adicionar usuário">
+          <span class="icon">➕</span>
+          <span>Adicionar usuário</span>
+        </button>
+        <div class="users-list" id="usersList"></div>
+      </div>
+    </div>
+
     <div class="modal" id="privateModal" hidden>
       <div class="modal-content">
         <div class="flex items-center justify-between">
@@ -206,7 +217,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-27"></script>
-    <script src="./app.js?v=20260204-27"></script>
+    <script src="./firebase-config.js?v=20260204-29"></script>
+    <script src="./app.js?v=20260204-29"></script>
   </body>
 </html>
