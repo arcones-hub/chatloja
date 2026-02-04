@@ -30,8 +30,13 @@ const usersList = document.getElementById("usersList");
 const logoutButtons = document.querySelectorAll(".logout-btn");
 const appRoot = document.getElementById("app");
 const messageTools = document.getElementById("messageTools");
-const emojiButtons = document.querySelectorAll(".emoji-btn");
+const togglePickerBtn = document.getElementById("togglePickerBtn");
+const pickerSearch = document.getElementById("pickerSearch");
+const pickerTabs = document.querySelectorAll(".picker-tab");
+const pickerGrid = document.getElementById("pickerGrid");
+const gifUrlRow = document.getElementById("gifUrlRow");
 const gifInput = document.getElementById("gifInput");
+const gifSendBtn = document.getElementById("gifSendBtn");
 const gifClearBtn = document.getElementById("gifClearBtn");
 
 const authGate = document.getElementById("authGate");
@@ -106,6 +111,31 @@ const defaultProfile = {
   theme: "blue",
   avatar: ""
 };
+
+const emojiList = [
+  "😀", "😁", "😂", "🤣", "😃", "😄", "😅", "😆", "😉", "😊", "😍", "😘",
+  "😎", "🤩", "😭", "😡", "👍", "👎", "🙏", "👏", "🔥", "🎉", "❤️", "💡",
+  "💯", "✨", "😴", "😮", "😱", "🤔", "🙌", "🥳", "🤝", "✅", "❌", "⚡"
+];
+
+const stickerList = ["😺", "🐶", "🦊", "🐼", "🐸", "🦄", "🐵", "🐧", "🐯", "🐰", "🐻", "🐨"];
+
+const gifList = [
+  { url: "https://media.giphy.com/media/5GoVLqeAOo6PK/giphy.gif", tag: "aplausos" },
+  { url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", tag: "ok" },
+  { url: "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif", tag: "feliz" },
+  { url: "https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif", tag: "surpreso" },
+  { url: "https://media.giphy.com/media/111ebonMs90YLu/giphy.gif", tag: "dança" },
+  { url: "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif", tag: "risada" },
+  { url: "https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif", tag: "obrigado" },
+  { url: "https://media.giphy.com/media/26tOZ42Mg6pbTUPHW/giphy.gif", tag: "cafe" },
+  { url: "https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif", tag: "wow" },
+  { url: "https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif", tag: "trabalho" },
+  { url: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif", tag: "joinha" },
+  { url: "https://media.giphy.com/media/13HgwGsXF0aiGY/giphy.gif", tag: "tchau" }
+];
+
+let activePickerTab = "emoji";
 
 function saveUser(user) {
   localStorage.setItem("chatUser", JSON.stringify(user));
@@ -251,7 +281,7 @@ function renderRooms() {
   });
 }
 
-function appendMessage({ senderName, text, createdAt, system, gifUrl }) {
+function appendMessage({ senderName, text, createdAt, system, gifUrl, sticker }) {
   const item = document.createElement("div");
   item.className = system ? "message system" : "message";
 
@@ -272,7 +302,16 @@ function appendMessage({ senderName, text, createdAt, system, gifUrl }) {
 
   const body = document.createElement("div");
   body.className = "message-body";
-  body.textContent = text;
+  if (text) {
+    body.textContent = text;
+  }
+
+  if (sticker) {
+    const stickerEl = document.createElement("span");
+    stickerEl.className = "message-sticker";
+    stickerEl.textContent = sticker;
+    body.appendChild(stickerEl);
+  }
 
   if (gifUrl) {
     const gif = document.createElement("img");
@@ -301,9 +340,11 @@ function enableChat(room) {
   roomSubtitle.textContent = "Histórico das últimas mensagens";
   messageInput.disabled = false;
   messageForm.querySelector("button").disabled = false;
+  if (togglePickerBtn) togglePickerBtn.disabled = false;
+  if (pickerSearch) pickerSearch.disabled = false;
   if (gifInput) gifInput.disabled = false;
+  if (gifSendBtn) gifSendBtn.disabled = false;
   if (gifClearBtn) gifClearBtn.disabled = false;
-  emojiButtons.forEach((button) => (button.disabled = false));
 }
 
 function disableChat() {
@@ -311,9 +352,11 @@ function disableChat() {
   roomSubtitle.textContent = "";
   messageInput.disabled = true;
   messageForm.querySelector("button").disabled = true;
+  if (togglePickerBtn) togglePickerBtn.disabled = true;
+  if (pickerSearch) pickerSearch.disabled = true;
   if (gifInput) gifInput.disabled = true;
+  if (gifSendBtn) gifSendBtn.disabled = true;
   if (gifClearBtn) gifClearBtn.disabled = true;
-  emojiButtons.forEach((button) => (button.disabled = true));
 }
 
 function joinRoom(room) {
@@ -361,16 +404,19 @@ function subscribeToRoom(room) {
           text: data.text,
           createdAt: data.createdAt,
           system: data.system,
-          gifUrl: data.gifUrl
+          gifUrl: data.gifUrl,
+          sticker: data.sticker
         });
       });
     });
 }
 
-async function sendMessage(text) {
+async function sendMessage(text, options = {}) {
   if (!firebaseReady) return;
   if (!currentRoom || !currentUser) return;
-  const gifUrl = gifInput?.value.trim();
+  const gifUrl = options.gifUrl ?? gifInput?.value.trim();
+  const sticker = options.sticker || "";
+  if (!text && !gifUrl && !sticker) return;
   await roomsRef
     .doc(currentRoom)
     .collection("messages")
@@ -379,6 +425,7 @@ async function sendMessage(text) {
       senderEmail: currentUser.email || "",
       text,
       gifUrl: gifUrl || "",
+      sticker,
       system: false,
       createdAt: serverTimestamp()
     });
@@ -448,6 +495,71 @@ function handleAuthSuccess(user) {
   saveAuth(user);
   saveUser({ name: user.name, email: user.email, role: user.role });
   setLoggedIn({ name: user.name, email: user.email, role: user.role });
+}
+
+function setActivePickerTab(tab) {
+  activePickerTab = tab;
+  pickerTabs.forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  });
+  if (gifUrlRow) gifUrlRow.hidden = tab !== "gif";
+  renderPicker();
+}
+
+function renderPicker() {
+  if (!pickerGrid) return;
+  const search = pickerSearch?.value.trim().toLowerCase() || "";
+  pickerGrid.innerHTML = "";
+
+  if (activePickerTab === "emoji") {
+    emojiList
+      .filter((emoji) => (search ? emoji.includes(search) : true))
+      .forEach((emoji) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "picker-item";
+        btn.textContent = emoji;
+        btn.addEventListener("click", () => {
+          if (messageInput.disabled) return;
+          messageInput.value += emoji;
+          messageInput.focus();
+        });
+        pickerGrid.appendChild(btn);
+      });
+  }
+
+  if (activePickerTab === "sticker") {
+    stickerList
+      .filter((sticker) => (search ? sticker.includes(search) : true))
+      .forEach((sticker) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "picker-item";
+        btn.textContent = sticker;
+        btn.addEventListener("click", () => {
+          sendMessage("", { sticker });
+        });
+        pickerGrid.appendChild(btn);
+      });
+  }
+
+  if (activePickerTab === "gif") {
+    gifList
+      .filter((gif) => (search ? gif.tag.includes(search) : true))
+      .forEach((gif) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "picker-item";
+        const img = document.createElement("img");
+        img.src = gif.url;
+        img.alt = gif.tag;
+        btn.appendChild(img);
+        btn.addEventListener("click", () => {
+          sendMessage("", { gifUrl: gif.url });
+        });
+        pickerGrid.appendChild(btn);
+      });
+  }
 }
 
 function isAdmin() {
@@ -610,14 +722,30 @@ if (authForm) {
   });
 }
 
-emojiButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (messageInput.disabled) return;
-    const emoji = button.dataset.emoji || "";
-    messageInput.value += emoji;
-    messageInput.focus();
+if (togglePickerBtn) {
+  togglePickerBtn.addEventListener("click", () => {
+    if (!messageTools) return;
+    messageTools.hidden = !messageTools.hidden;
+    renderPicker();
   });
+}
+
+if (pickerSearch) {
+  pickerSearch.addEventListener("input", () => renderPicker());
+}
+
+pickerTabs.forEach((button) => {
+  button.addEventListener("click", () => setActivePickerTab(button.dataset.tab));
 });
+
+if (gifSendBtn) {
+  gifSendBtn.addEventListener("click", () => {
+    const url = gifInput?.value.trim();
+    if (!url) return;
+    sendMessage("", { gifUrl: url });
+    gifInput.value = "";
+  });
+}
 
 if (gifClearBtn) {
   gifClearBtn.addEventListener("click", () => {
@@ -705,7 +833,7 @@ messageForm.addEventListener("submit", (event) => {
   const text = messageInput.value.trim();
   const gifUrl = gifInput?.value.trim();
   if ((!text && !gifUrl) || !currentRoom || !currentUser) return;
-  sendMessage(text);
+  sendMessage(text, { gifUrl });
   messageInput.value = "";
   if (gifInput) gifInput.value = "";
 });
@@ -723,6 +851,9 @@ bootstrapRooms();
 if (loginForm) loginForm.hidden = true;
 setLogoutButtonsVisible(false);
 updateAdminUi();
+if (messageTools) {
+  setActivePickerTab("emoji");
+}
 const savedAuth = loadAuth();
 if (savedAuth) {
   handleAuthSuccess(savedAuth);

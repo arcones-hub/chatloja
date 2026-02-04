@@ -130,6 +130,7 @@
           <div class="chat-body" id="messages"></div>
 
           <form id="messageForm" class="chat-input">
+            <button type="button" id="togglePickerBtn" class="tool-btn" aria-label="Abrir emojis, GIFs e stickers">😊</button>
             <input
               type="text"
               id="messageInput"
@@ -139,17 +140,19 @@
             />
             <button type="submit" disabled>Enviar</button>
           </form>
-          <div class="message-tools" id="messageTools" aria-label="Opções da mensagem">
-            <div class="emoji-picker">
-              <button type="button" class="emoji-btn" data-emoji="😀">😀</button>
-              <button type="button" class="emoji-btn" data-emoji="😂">😂</button>
-              <button type="button" class="emoji-btn" data-emoji="👍">👍</button>
-              <button type="button" class="emoji-btn" data-emoji="🔥">🔥</button>
-              <button type="button" class="emoji-btn" data-emoji="🎉">🎉</button>
-              <button type="button" class="emoji-btn" data-emoji="❤️">❤️</button>
+          <div class="message-tools" id="messageTools" aria-label="Opções da mensagem" hidden>
+            <div class="picker-header">
+              <input type="text" id="pickerSearch" placeholder="Buscar emojis, GIFs e stickers" />
             </div>
-            <div class="gif-input">
+            <div class="picker-tabs">
+              <button type="button" class="picker-tab active" data-tab="emoji">Emojis</button>
+              <button type="button" class="picker-tab" data-tab="gif">GIFs</button>
+              <button type="button" class="picker-tab" data-tab="sticker">Stickers</button>
+            </div>
+            <div class="picker-grid" id="pickerGrid"></div>
+            <div class="gif-url" id="gifUrlRow" hidden>
               <input type="url" id="gifInput" placeholder="Cole a URL do GIF" />
+              <button type="button" id="gifSendBtn">Enviar</button>
               <button type="button" id="gifClearBtn" class="ghost">Limpar</button>
             </div>
           </div>
@@ -159,7 +162,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="/firebase-config.js?v=20260203-5"></script>
-    <script src="/app.js?v=20260203-5"></script>
+    <script src="/firebase-config.js?v=20260203-6"></script>
+    <script src="/app.js?v=20260203-6"></script>
   </body>
 </html>
