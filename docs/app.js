@@ -303,9 +303,6 @@ function disableChat() {
 function joinRoom(room) {
   if (!firebaseReady) return;
   if (!currentUser) return;
-  if (!isAdmin() && Array.isArray(currentUser.rooms) && !currentUser.rooms.includes(room)) {
-    return;
-  }
   if (currentRoom === room) return;
   leaveCurrentRoom();
   currentRoom = room;
@@ -407,14 +404,7 @@ async function listenRooms() {
   if (!firebaseReady) return;
   await authReady;
   roomsRef.orderBy("name").onSnapshot((snapshot) => {
-    const allRooms = snapshot.docs.map((doc) => doc.id);
-    if (isAdmin() || !currentUser) {
-      rooms = allRooms;
-    } else if (Array.isArray(currentUser.rooms)) {
-      rooms = allRooms.filter((room) => currentUser.rooms.includes(room));
-    } else {
-      rooms = [];
-    }
+    rooms = snapshot.docs.map((doc) => doc.id);
     renderRooms();
     if (!currentRoom && rooms.length > 0) {
       joinRoom(rooms[0]);
@@ -530,7 +520,6 @@ async function addUser(user) {
     }
     await usersRef.doc(usernameLower).set({
       ...user,
-      rooms: Array.isArray(user.rooms) ? user.rooms : rooms.slice(),
       usernameLower,
       emailLower,
       createdAt: serverTimestamp()
@@ -682,8 +671,7 @@ if (userForm) {
       email: newUserEmail.value.trim(),
       username: newUserUsername.value.trim(),
       password: newUserPassword.value,
-      role: newUserRole.value,
-      rooms: rooms.slice()
+      role: newUserRole.value
     };
     if (!user.name || !user.email || !user.username || !user.password) return;
     (async () => {
