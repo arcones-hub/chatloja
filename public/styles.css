@@ -357,6 +357,44 @@ button.ghost {
   color: #1f4f84;
 }
 
+.avatar-editor {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.avatar-editor .profile-avatar {
+  width: 44px;
+  height: 44px;
+}
+
+.avatar-editor input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.45);
+  color: #ffffff;
+  font-size: 14px;
+  border-radius: 50%;
+  opacity: 0;
+  display: grid;
+  place-items: center;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.avatar-editor:hover .avatar-edit-btn,
+.avatar-editor:focus-within .avatar-edit-btn {
+  opacity: 1;
+}
+
 .profile-avatar img {
   width: 100%;
   height: 100%;

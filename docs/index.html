@@ -39,9 +39,13 @@
             <h2>Perfil</h2>
             <div class="profile" id="profileView" hidden>
               <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatarWrap">
-                  <img id="profileAvatar" alt="Foto do perfil" hidden />
-                  <span id="profileAvatarFallback">A</span>
+                <div class="avatar-editor" id="profileAvatarWrap">
+                  <div class="profile-avatar">
+                    <img id="profileAvatar" alt="Foto do perfil" hidden />
+                    <span id="profileAvatarFallback">A</span>
+                  </div>
+                  <input type="file" id="avatarInput" accept="image/*" aria-label="Alterar foto" />
+                  <button type="button" class="avatar-edit-btn" aria-label="Editar foto">✏️</button>
                 </div>
                 <div>
                   <p><strong id="profileName"></strong></p>
@@ -49,11 +53,6 @@
                   <span class="status-badge" id="profileStatusBadge">Online</span>
                 </div>
               </div>
-
-              <label class="inline-field">
-                Alterar foto
-                <input type="file" id="avatarInput" accept="image/*" />
-              </label>
 
               <label class="inline-field">
                 Status
@@ -151,7 +150,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="./firebase-config.js?v=20260204-08"></script>
-    <script src="./app.js?v=20260204-08"></script>
+    <script src="./firebase-config.js?v=20260204-09"></script>
+    <script src="./app.js?v=20260204-09"></script>
   </body>
 </html>
