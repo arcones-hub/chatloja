@@ -481,6 +481,20 @@ function renderUsers() {
     const actions = document.createElement("div");
     actions.className = "user-actions";
 
+    const view = document.createElement("button");
+    view.type = "button";
+    view.className = "user-view";
+    view.textContent = "Ver senha";
+    view.addEventListener("click", () => showUserPassword(user.username));
+    actions.appendChild(view);
+
+    const edit = document.createElement("button");
+    edit.type = "button";
+    edit.className = "user-edit";
+    edit.textContent = "Alterar senha";
+    edit.addEventListener("click", () => updateUserPassword(user.username));
+    actions.appendChild(edit);
+
     const del = document.createElement("button");
     del.type = "button";
     del.className = "user-delete";
@@ -506,6 +520,24 @@ function addUser(user) {
   users.push(user);
   saveUsers(users);
   return true;
+}
+
+function showUserPassword(username) {
+  const users = loadUsers();
+  const target = users.find((user) => user.username === username);
+  if (!target) return;
+  alert(`Senha de ${target.username}: ${target.password}`);
+}
+
+function updateUserPassword(username) {
+  const users = loadUsers();
+  const target = users.find((user) => user.username === username);
+  if (!target) return;
+  const nextPassword = prompt(`Nova senha para ${target.username}:`, "");
+  if (!nextPassword) return;
+  target.password = nextPassword;
+  saveUsers(users);
+  renderUsers();
 }
 
 function removeUser(username) {

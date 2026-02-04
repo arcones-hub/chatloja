@@ -360,6 +360,16 @@ button.ghost {
   gap: 6px;
 }
 
+.user-view,
+.user-edit {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #7aa8e6;
+  background: #f1f7ff;
+  color: #1f4f84;
+  font-size: 12px;
+}
+
 .user-delete {
   padding: 6px 10px;
   border-radius: 6px;

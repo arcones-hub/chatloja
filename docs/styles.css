@@ -102,6 +102,16 @@ body.theme-light .app-header {
   gap: 6px;
 }
 
+.user-view,
+.user-edit {
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: transparent;
+  color: #cbd5f5;
+  font-size: 12px;
+}
+
 .user-delete {
   padding: 6px 10px;
   border-radius: 10px;
