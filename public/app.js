@@ -75,7 +75,9 @@ const defaultAdmin = {
   password: "guima00ads",
   name: "Administrador",
   email: "arconesgp@hotmail.com",
-  role: "admin"
+  role: "admin",
+  usernameLower: "admin",
+  emailLower: "arconesgp@hotmail.com"
 };
 
 const defaultProfile = {
@@ -235,6 +237,14 @@ async function ensureAdminUser() {
       ...defaultAdmin,
       createdAt: serverTimestamp()
     });
+  } else {
+    const data = snapshot.data();
+    const updates = {};
+    if (!data.usernameLower) updates.usernameLower = data.username?.toLowerCase() || "admin";
+    if (!data.emailLower) updates.emailLower = data.email?.toLowerCase() || defaultAdmin.email;
+    if (Object.keys(updates).length > 0) {
+      await docRef.update(updates);
+    }
   }
 }
 
@@ -565,6 +575,7 @@ function renderUsersFromSnapshot(snapshot) {
   usersList.innerHTML = "";
   snapshot.forEach((doc) => {
     const user = doc.data();
+    const userDocId = user.usernameLower || user.username || doc.id;
     const row = document.createElement("div");
     row.className = "user-row";
 
@@ -579,14 +590,14 @@ function renderUsersFromSnapshot(snapshot) {
     view.type = "button";
     view.className = "user-view";
     view.textContent = "Ver senha";
-    view.addEventListener("click", () => showUserPassword(user.username));
+    view.addEventListener("click", () => showUserPassword(userDocId));
     actions.appendChild(view);
 
     const edit = document.createElement("button");
     edit.type = "button";
     edit.className = "user-edit";
     edit.textContent = "Alterar senha";
-    edit.addEventListener("click", () => updateUserPassword(user.username));
+    edit.addEventListener("click", () => updateUserPassword(userDocId));
     actions.appendChild(edit);
 
     const del = document.createElement("button");
@@ -594,7 +605,7 @@ function renderUsersFromSnapshot(snapshot) {
     del.className = "user-delete";
     del.textContent = "Excluir";
     del.disabled = user.username === "admin";
-    del.addEventListener("click", () => removeUser(user.username));
+    del.addEventListener("click", () => removeUser(userDocId));
     actions.appendChild(del);
 
     usersList.appendChild(row);
@@ -603,18 +614,22 @@ function renderUsersFromSnapshot(snapshot) {
 }
 async function addUser(user) {
   if (!firebaseReady || !usersRef) return false;
-  const existingUsername = await usersRef.doc(user.username).get();
+  const usernameLower = user.username.toLowerCase();
+  const emailLower = user.email.toLowerCase();
+  const existingUsername = await usersRef.doc(usernameLower).get();
   if (existingUsername.exists) {
     alert("Usuário já existe.");
     return false;
   }
-  const existingEmail = await usersRef.where("email", "==", user.email).limit(1).get();
+  const existingEmail = await usersRef.where("emailLower", "==", emailLower).limit(1).get();
   if (!existingEmail.empty) {
     alert("E-mail já existe.");
     return false;
   }
-  await usersRef.doc(user.username).set({
+  await usersRef.doc(usernameLower).set({
     ...user,
+    usernameLower,
+    emailLower,
     createdAt: serverTimestamp()
   });
   return true;
@@ -695,22 +710,37 @@ if (authForm) {
       if (!firebaseReady || !usersRef) return;
       const loginId = username.toLowerCase();
       let foundSnapshot = await usersRef
-        .where("username", "==", loginId)
-        .where("password", "==", password)
+        .where("usernameLower", "==", loginId)
         .limit(1)
         .get();
       if (foundSnapshot.empty) {
         foundSnapshot = await usersRef
-          .where("email", "==", loginId)
-          .where("password", "==", password)
+          .where("emailLower", "==", loginId)
           .limit(1)
           .get();
+      }
+      if (foundSnapshot.empty) {
+        foundSnapshot = await usersRef.where("username", "==", username).limit(1).get();
+      }
+      if (foundSnapshot.empty) {
+        foundSnapshot = await usersRef.where("email", "==", username).limit(1).get();
       }
       if (foundSnapshot.empty) {
         showAuthError("Usuário ou senha inválidos.");
         return;
       }
-      const found = foundSnapshot.docs[0].data();
+      const foundDoc = foundSnapshot.docs[0];
+      const found = foundDoc.data();
+      if (found.password !== password) {
+        showAuthError("Usuário ou senha inválidos.");
+        return;
+      }
+      if (!found.usernameLower || !found.emailLower) {
+        await foundDoc.ref.update({
+          usernameLower: found.username?.toLowerCase() || foundDoc.id,
+          emailLower: found.email?.toLowerCase() || ""
+        });
+      }
       handleAuthSuccess(found);
       authUserInput.value = "";
       authPassInput.value = "";
