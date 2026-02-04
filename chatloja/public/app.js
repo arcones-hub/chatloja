@@ -215,13 +215,8 @@ if (firebaseReady) {
   usersRef = db.collection("users");
   privateRoomsRef = db.collection("privateRooms");
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
-  if (firebase.auth) {
-    const auth = firebase.auth(firebaseApp);
-    authReady = auth.signInAnonymously().catch((error) => {
-      console.error(error);
-      userStatus.textContent = "Falha na autenticação anônima do Firebase.";
-    });
-  }
+  // Removido auth anônimo: login será apenas por usuário/senha local
+  authReady = Promise.resolve();
 }
 
 
@@ -732,14 +727,16 @@ function enableChat(room) {
   roomTitle.textContent = `Sala: ${room}`;
   roomSubtitle.textContent = "Histórico das últimas mensagens";
   messageInput.disabled = false;
-  messageForm.querySelector("button").disabled = false;
+  const sendBtn = messageForm.querySelector('button[type="submit"]');
+  if (sendBtn) sendBtn.disabled = false;
 }
 
 function disableChat() {
   roomTitle.textContent = "Selecione uma sala";
   roomSubtitle.textContent = "";
   messageInput.disabled = true;
-  messageForm.querySelector("button").disabled = true;
+  const sendBtn = messageForm.querySelector('button[type="submit"]');
+  if (sendBtn) sendBtn.disabled = true;
 }
 
 function joinRoom(room) {
