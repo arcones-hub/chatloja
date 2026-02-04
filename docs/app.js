@@ -614,25 +614,32 @@ function renderUsersFromSnapshot(snapshot) {
 }
 async function addUser(user) {
   if (!firebaseReady || !usersRef) return false;
-  const usernameLower = user.username.toLowerCase();
-  const emailLower = user.email.toLowerCase();
-  const existingUsername = await usersRef.doc(usernameLower).get();
-  if (existingUsername.exists) {
-    alert("Usuário já existe.");
+  try {
+    const usernameLower = user.username.toLowerCase();
+    const emailLower = user.email.toLowerCase();
+    const existingUsername = await usersRef.doc(usernameLower).get();
+    if (existingUsername.exists) {
+      alert("Usuário já existe.");
+      return false;
+    }
+    const existingEmail = await usersRef.where("emailLower", "==", emailLower).limit(1).get();
+    if (!existingEmail.empty) {
+      alert("E-mail já existe.");
+      return false;
+    }
+    await usersRef.doc(usernameLower).set({
+      ...user,
+      usernameLower,
+      emailLower,
+      createdAt: serverTimestamp()
+    });
+    alert("Usuário criado com sucesso.");
+    return true;
+  } catch (error) {
+    alert("Falha ao criar usuário. Verifique as permissões do Firestore.");
+    console.error(error);
     return false;
   }
-  const existingEmail = await usersRef.where("emailLower", "==", emailLower).limit(1).get();
-  if (!existingEmail.empty) {
-    alert("E-mail já existe.");
-    return false;
-  }
-  await usersRef.doc(usernameLower).set({
-    ...user,
-    usernameLower,
-    emailLower,
-    createdAt: serverTimestamp()
-  });
-  return true;
 }
 
 async function removeUser(username) {
@@ -705,43 +712,48 @@ if (authForm) {
     const username = authUserInput.value.trim();
     const password = authPassInput.value;
     (async () => {
-      if (!firebaseReady || !usersRef) return;
-      const loginId = username.toLowerCase();
-      let foundSnapshot = await usersRef
-        .where("usernameLower", "==", loginId)
-        .limit(1)
-        .get();
-      if (foundSnapshot.empty) {
-        foundSnapshot = await usersRef
-          .where("emailLower", "==", loginId)
+      try {
+        if (!firebaseReady || !usersRef) return;
+        const loginId = username.toLowerCase();
+        let foundSnapshot = await usersRef
+          .where("usernameLower", "==", loginId)
           .limit(1)
           .get();
+        if (foundSnapshot.empty) {
+          foundSnapshot = await usersRef
+            .where("emailLower", "==", loginId)
+            .limit(1)
+            .get();
+        }
+        if (foundSnapshot.empty) {
+          foundSnapshot = await usersRef.where("username", "==", username).limit(1).get();
+        }
+        if (foundSnapshot.empty) {
+          foundSnapshot = await usersRef.where("email", "==", username).limit(1).get();
+        }
+        if (foundSnapshot.empty) {
+          showAuthError("Usuário ou senha inválidos.");
+          return;
+        }
+        const foundDoc = foundSnapshot.docs[0];
+        const found = foundDoc.data();
+        if (found.password !== password) {
+          showAuthError("Usuário ou senha inválidos.");
+          return;
+        }
+        if (!found.usernameLower || !found.emailLower) {
+          await foundDoc.ref.update({
+            usernameLower: found.username?.toLowerCase() || foundDoc.id,
+            emailLower: found.email?.toLowerCase() || ""
+          });
+        }
+        handleAuthSuccess(found);
+        authUserInput.value = "";
+        authPassInput.value = "";
+      } catch (error) {
+        showAuthError("Falha ao autenticar. Verifique permissões do Firestore.");
+        console.error(error);
       }
-      if (foundSnapshot.empty) {
-        foundSnapshot = await usersRef.where("username", "==", username).limit(1).get();
-      }
-      if (foundSnapshot.empty) {
-        foundSnapshot = await usersRef.where("email", "==", username).limit(1).get();
-      }
-      if (foundSnapshot.empty) {
-        showAuthError("Usuário ou senha inválidos.");
-        return;
-      }
-      const foundDoc = foundSnapshot.docs[0];
-      const found = foundDoc.data();
-      if (found.password !== password) {
-        showAuthError("Usuário ou senha inválidos.");
-        return;
-      }
-      if (!found.usernameLower || !found.emailLower) {
-        await foundDoc.ref.update({
-          usernameLower: found.username?.toLowerCase() || foundDoc.id,
-          emailLower: found.email?.toLowerCase() || ""
-        });
-      }
-      handleAuthSuccess(found);
-      authUserInput.value = "";
-      authPassInput.value = "";
     })();
   });
 }
