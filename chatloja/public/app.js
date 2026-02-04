@@ -51,9 +51,10 @@ if (clipInput) {
       } else {
         alert('Navegador não suporta geolocalização.');
       }
+
     }
   });
-}
+
 
 // Emoji picker
 const emojiBtn = document.querySelector('.chat-emoji-btn');
@@ -1423,3 +1424,4 @@ setInterval(() => {
     avatar: settings.avatar || ""
   });
 }, 60000);
+}
