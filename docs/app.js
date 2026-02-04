@@ -148,9 +148,8 @@ function applyTheme(theme) {
 }
 
 function applyStatus(status) {
-  if (!profileStatusBadge) return;
   const normalized = status || "online";
-  profileStatusBadge.textContent =
+  const label =
     normalized === "ocupado"
       ? "Ocupado"
       : normalized === "ausente"
@@ -158,10 +157,13 @@ function applyStatus(status) {
       : normalized === "offline"
       ? "Offline"
       : "Online";
-  profileStatusBadge.classList.toggle("ausente", normalized === "ausente");
-  profileStatusBadge.classList.toggle("ocupado", normalized === "ocupado");
-  profileStatusBadge.classList.toggle("offline", normalized === "offline");
-  userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${profileStatusBadge.textContent}`;
+  if (profileStatusBadge) {
+    profileStatusBadge.textContent = label;
+    profileStatusBadge.classList.toggle("ausente", normalized === "ausente");
+    profileStatusBadge.classList.toggle("ocupado", normalized === "ocupado");
+    profileStatusBadge.classList.toggle("offline", normalized === "offline");
+  }
+  userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${label}`;
   updateProfilePresenceRing(normalized);
 }
 
