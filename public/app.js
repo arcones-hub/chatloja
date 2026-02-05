@@ -137,39 +137,7 @@ const defaultAdmin = {
 };
 
 const defaultProfile = {
-  status: "online",
-  theme: "blue",
   avatar: ""
-};
-
-let avatarImage = null;
-let avatarScale = 1;
-
-function saveUser(user) {
-  localStorage.setItem("chatUser", JSON.stringify({ email: user.email }));
-}
-
-
-function saveAuth(user) {
-  localStorage.setItem(
-    "chatAuth",
-    JSON.stringify({
-      username: user.username,
-      usernameLower: user.usernameLower || user.username?.toLowerCase() || ""
-    })
-  );
-}
-
-function loadAuth() {
-  const raw = localStorage.getItem("chatAuth");
-  if (!raw) return null;
-  try {
-    const data = JSON.parse(raw);
-    if (!data?.username) return null;
-    return data;
-  } catch {
-    return null;
-  }
 }
 function loadUser() {
   const raw = localStorage.getItem("chatUser");
@@ -208,7 +176,6 @@ function applyStatus(status) {
     normalized === "ocupado"
       ? "Ocupado"
       : normalized === "offline"
-      ? "Offline"
       : "Online";
   if (profileStatusBadge) {
     profileStatusBadge.textContent = label;
@@ -216,10 +183,12 @@ function applyStatus(status) {
     profileStatusBadge.classList.toggle("ocupado", normalized === "ocupado");
     profileStatusBadge.classList.toggle("offline", normalized === "offline");
   }
-  userStatus.textContent = `Conectado como ${currentUser?.name || ""} • ${label}`;
-  updateProfilePresenceRing(normalized);
-}
-
+  let rooms = [];
+  let currentRoomUnsub = null;
+  let activityUnsub = null;
+  let privateUnsub = null;
+  let currentPrivateRoom = "";
+  let currentPrivateName = "";
 function applyAvatar(avatar, name) {
   const initials = name
     ? name
