@@ -1,36 +1,4 @@
-<<<<<<< HEAD
-=======
 
-const loginForm = document.getElementById("loginForm");
-const roomForm = document.getElementById("roomForm");
-const roomInput = document.getElementById("roomInput");
-const roomsList = document.getElementById("roomsList");
-const messages = document.getElementById("messages");
-const messageForm = document.getElementById("messageForm");
-const messageInput = document.getElementById("messageInput");
-const roomTitle = document.getElementById("roomTitle");
-const roomSubtitle = document.getElementById("roomSubtitle");
-const roomActivity = document.getElementById("roomActivity");
-const userStatus = document.getElementById("userStatus");
-const profileView = document.getElementById("profileView");
-const profileName = document.getElementById("profileName");
-const profileEmail = document.getElementById("profileEmail");
-<<<<<<< HEAD
-const logoutBtn = document.getElementById("logoutBtn");
-const appRoot = document.getElementById("app");
-const loginScreen = document.getElementById("loginScreen");
-const emailInput = document.getElementById("emailInput");
-const passwordInput = document.getElementById("passwordInput");
-const adminPanel = document.getElementById("adminPanel");
-const userForm = document.getElementById("userForm");
-const userNameInput = document.getElementById("userNameInput");
-const userEmailInput = document.getElementById("userEmailInput");
-const userPasswordInput = document.getElementById("userPasswordInput");
-const usersList = document.getElementById("usersList");
-
-roomForm.hidden = true;
-adminPanel.hidden = true;
-=======
 const profileStatusBadge = document.getElementById("profileStatusBadge");
 const profileAvatarWrap = document.getElementById("profileAvatarWrap");
 const avatarInput = document.getElementById("avatarInput");

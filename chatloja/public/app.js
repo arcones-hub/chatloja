@@ -120,7 +120,6 @@ if (micBtn) {
       alert('Não foi possível acessar o microfone.');
     }
   });
-}
 
 const loginForm = document.getElementById("loginForm");
 const roomForm = document.getElementById("roomForm");
@@ -187,7 +186,6 @@ if (privateForm && privateInput) {
     await sendPrivateMessage(text);
     privateInput.value = "";
   });
-}
 
 const authGate = document.getElementById("authGate");
 const authForm = document.getElementById("authForm");
@@ -215,7 +213,6 @@ if (!firebaseReady) {
   disableChat();
   if (loginForm) loginForm.querySelector("button").disabled = true;
   if (roomForm) roomForm.querySelector("button").disabled = true;
-}
 
 if (firebaseReady) {
   const firebaseApp = firebase.initializeApp(window.firebaseConfig);
@@ -226,7 +223,6 @@ if (firebaseReady) {
   serverTimestamp = firebase.firestore.FieldValue.serverTimestamp;
   // Removido auth anônimo: login será apenas por usuário/senha local
   authReady = Promise.resolve();
-}
 
 
 const defaultAdmin = {
@@ -1349,12 +1345,3 @@ window.addEventListener("beforeunload", () => {
 });
 const savedAuth = loadAuth();
 attemptAutoLogin();
-
-setInterval(() => {
-  if (!currentUser) return;
-  const settings = loadProfile();
-  updateCurrentUserPresence({
-    status: settings.status || "online",
-    avatar: settings.avatar || ""
-  });
-}, 60000);
