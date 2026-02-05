@@ -34,7 +34,6 @@ if (clipInput) {
     }
     clipInput.value = '';
   });
-}
 
 // Localização (clip): envia localização atual
 if (clipInput) {
@@ -74,7 +73,6 @@ if (emojiBtn && emojiPicker) {
       emojiPicker.style.display = 'none';
     }
   });
-}
 
 // Envio ao clicar no ícone de envio: não precisa de event.preventDefault, apenas submit normal do form
 // O submit do formulário já trata tanto Enter quanto clique no botão
@@ -1155,77 +1153,14 @@ if (loginForm) {
   });
 }
 
-if (authForm) {
-  authForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const email = authUserInput.value.trim();
-    const password = authPassInput.value;
-    if (!firebaseAuth) return showAuthError("Firebase Auth não inicializado.");
-    try {
-      const userCredential = await firebaseAuth.signInWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      // Busca dados extras do usuário no Firestore
-      const userDoc = await usersRef.doc(user.uid).get();
-      let userData = {
-        name: user.displayName || "",
-        email: user.email,
-        role: "user",
-        username: user.email,
-        usernameLower: user.email.toLowerCase()
-      };
-      if (userDoc.exists) {
-        userData = { ...userData, ...userDoc.data() };
-      }
-      handleAuthSuccess(userData);
-      authUserInput.value = "";
-      authPassInput.value = "";
-    } catch (error) {
-      showAuthError("Usuário ou senha inválidos.");
-      console.error(error);
-    }
-  });
-}
 
-// Logout usando Firebase Auth
+
+
+// Logout local
 logoutButtons.forEach((button) => {
-  button.addEventListener("click", async () => {
-    if (firebaseAuth) await firebaseAuth.signOut();
-    setLoggedOut();
-  });
+  button.addEventListener("click", () => setLoggedOut());
 });
 
-// Registro de novo usuário
-if (typeof registerForm !== 'undefined' && registerForm) {
-  registerForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const email = registerEmailInput.value.trim();
-    const password = registerPassInput.value;
-    const name = registerNameInput.value.trim();
-    if (!firebaseAuth) return showAuthError("Firebase Auth não inicializado.");
-    try {
-      const userCredential = await firebaseAuth.createUserWithEmailAndPassword(email, password);
-      const user = userCredential.user;
-      await user.updateProfile({ displayName: name });
-      // Salva dados extras no Firestore
-      await usersRef.doc(user.uid).set({
-        name,
-        email,
-        role: "user",
-        username: email,
-        usernameLower: email.toLowerCase(),
-        createdAt: serverTimestamp(),
-        status: "offline",
-        avatar: ""
-      });
-      showAuthError("Usuário registrado! Faça login.");
-      registerEmailInput.value = "";
-      registerPassInput.value = "";
-      registerNameInput.value = "";
-    } catch (error) {
-      showAuthError("Erro ao registrar usuário: " + error.message);
-      console.error(error);
-    }
-  });
 
 if (userForm) {
   userForm.addEventListener("submit", (event) => {
@@ -1423,4 +1358,3 @@ setInterval(() => {
     avatar: settings.avatar || ""
   });
 }, 60000);
-}
