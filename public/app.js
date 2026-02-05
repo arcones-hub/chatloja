@@ -207,8 +207,6 @@ function applyStatus(status) {
   const label =
     normalized === "ocupado"
       ? "Ocupado"
-      : normalized === "ausente"
-      ? "Ausente"
       : normalized === "offline"
       ? "Offline"
       : "Online";
