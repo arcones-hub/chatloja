@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot generator="Robot 7.4.1 (Python 3.14.2 on win32)" generated="2026-02-09T21:52:32.705892" rpa="false" schemaversion="5">
+<suite id="s1" name="Tests" source="C:\Users\AGP_LAB\Desktop\automacao\tests">
+<suite id="s1-s1" name="Test Example" source="C:\Users\AGP_LAB\Desktop\automacao\tests\test_example.robot">
+<test id="s1-s1-t1" name="Open Example And Check Title" line="5">
+<kw name="Open Browser" owner="SeleniumLibrary">
+<msg time="2026-02-09T21:52:32.852057" level="INFO">Opening browser 'chrome' to base url 'https://example.com'.</msg>
+<arg>https://example.com</arg>
+<arg>chrome</arg>
+<doc>Opens a new browser instance to the optional ``url``.</doc>
+<status status="PASS" start="2026-02-09T21:52:32.851827" elapsed="0.686162"/>
+</kw>
+<kw name="Title Should Be" owner="SeleniumLibrary">
+<msg time="2026-02-09T21:52:33.541748" level="INFO">Page title is 'Example Domain'.</msg>
+<arg>Example Domain</arg>
+<doc>Verifies that the current page title equals ``title``.</doc>
+<status status="PASS" start="2026-02-09T21:52:33.538339" elapsed="0.003508"/>
+</kw>
+<kw name="Close Browser" owner="SeleniumLibrary" type="TEARDOWN">
+<doc>Closes the current browser.</doc>
+<status status="PASS" start="2026-02-09T21:52:33.542193" elapsed="2.084263"/>
+</kw>
+<status status="PASS" start="2026-02-09T21:52:32.850808" elapsed="2.775894"/>
+</test>
+<status status="PASS" start="2026-02-09T21:52:32.732099" elapsed="2.895352"/>
+</suite>
+<status status="PASS" start="2026-02-09T21:52:32.707062" elapsed="2.921047"/>
+</suite>
+<statistics>
+<total>
+<stat pass="1" fail="0" skip="0">All Tests</stat>
+</total>
+<tag>
+</tag>
+<suite>
+<stat name="Tests" id="s1" pass="1" fail="0" skip="0">Tests</stat>
+<stat name="Test Example" id="s1-s1" pass="1" fail="0" skip="0">Tests.Test Example</stat>
+</suite>
+</statistics>
+<errors>
+</errors>
+</robot>
