@@ -8,24 +8,6 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div id="authGate" class="auth-gate" hidden>
-      <div class="auth-card">
-        <h2>Acesso</h2>
-        <p class="muted">Entre com usuário e senha para acessar o sistema.</p>
-        <form id="authForm" class="form">
-          <label>
-            Usuário
-            <input type="text" id="authUser" placeholder="ex: admin" required />
-          </label>
-          <label>
-            Senha
-            <input type="password" id="authPass" placeholder="Sua senha" required />
-          </label>
-          <button type="submit">Entrar</button>
-          <div class="auth-error" id="authError" hidden>Usuário ou senha inválidos.</div>
-        </form>
-      </div>
-    </div>
 
     <div id="app" hidden>
       <header class="app-header">
@@ -117,15 +99,38 @@
 
           <div class="chat-body" id="messages"></div>
 
-          <form id="messageForm" class="chat-input">
-            <input
-              type="text"
-              id="messageInput"
-              placeholder="Digite sua mensagem..."
-              autocomplete="off"
-              disabled
-            />
-            <button type="submit" disabled>Enviar</button>
+          <form id="messageForm" class="chat-input" style="display: flex; align-items: center; gap: 8px;">
+            <!-- Ícone de emoji (esquerda) -->
+            <button type="button" class="btn btn-ghost chat-emoji-btn" tabindex="-1" aria-label="Emoji">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <!-- Ícone de clipe de papel (esquerda) -->
+            <button type="button" class="btn btn-ghost chat-clip-btn" tabindex="-1" aria-label="Anexar arquivo">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l10.61-10.61a3 3 0 0 1 4.24 4.24l-10.61 10.61a1 1 0 0 1-1.41-1.41l9.19-9.19"/></svg>
+            </button>
+            <!-- Campo de entrada -->
+            <div class="chat-input-wrap" style="position:relative; flex:1; display:flex; align-items:center;">
+              <input
+                type="text"
+                id="messageInput"
+                placeholder="Digite sua mensagem..."
+                autocomplete="off"
+                disabled
+                style="padding-right:70px; padding-left:10px; width:100%;"
+              />
+              <!-- Ícone de câmera (direita) -->
+              <span style="position:absolute; right:38px; top:50%; transform:translateY(-50%); cursor:pointer;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19V7a2 2 0 0 0-2-2h-3.17a2 2 0 0 1-1.41-.59l-1.83-1.83A2 2 0 0 0 12.17 2H11.83a2 2 0 0 0-1.41.59L8.59 4.41A2 2 0 0 1 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </span>
+            </div>
+            <!-- Ícone de microfone (entre input e enviar) -->
+            <button type="button" class="btn btn-ghost chat-mic-btn" tabindex="-1" aria-label="Microfone">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </button>
+            <!-- Botão de envio (ícone) -->
+            <button type="submit" aria-label="Enviar" disabled>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
           </form>
         </main>
       </section>

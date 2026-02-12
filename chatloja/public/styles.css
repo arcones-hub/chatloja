@@ -26,26 +26,6 @@ body {
   color: var(--text);
 }
 
-<<<<<<< HEAD
-.login-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.login-card {
-  background: var(--card);
-  padding: 24px;
-  border-radius: 10px;
-  border: 2px solid var(--border);
-  box-shadow: var(--shadow);
-  width: min(420px, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-=======
 body.theme-light {
   color-scheme: light;
   --bg: #f8fafc;
@@ -63,6 +43,40 @@ button {
   font-family: inherit;
   border-radius: 10px;
   transition: all 0.2s ease;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+  font-size: 15px;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: #fff;
+  border: 1px solid var(--primary-dark);
+}
+.btn-primary:hover {
+  background: linear-gradient(180deg, #60a5fa 0%, var(--primary-dark) 100%);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover {
+  background: var(--accent);
+  color: var(--primary);
 }
 
 body.theme-light .app-header {
@@ -97,7 +111,6 @@ body:not(.theme-light) .chat-header {
 
 body:not(.theme-light) .chat-body {
   background: #0b1220;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 #app {
@@ -237,22 +250,11 @@ button.ghost {
   margin-bottom: 12px;
 }
 
-<<<<<<< HEAD
-.room-item {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.room-item .room {
-  flex: 1;
-=======
 .room-row {
   display: flex;
   gap: 8px;
   align-items: center;
   justify-content: space-between;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 .room {
@@ -278,22 +280,6 @@ button.ghost {
 .room.active {
   background: linear-gradient(180deg, #89c2ff 0%, #2b6cb0 100%);
   color: white;
-}
-
-.room-delete,
-.user-delete {
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 6px;
-  border: 1px solid #fca5a5;
-  background: #fee2e2;
-  color: #991b1b;
-  box-shadow: none;
-}
-
-.room-delete:hover,
-.user-delete:hover {
-  background: #fecaca;
 }
 
 .chat {
@@ -424,13 +410,6 @@ button.ghost {
   gap: 8px;
 }
 
-<<<<<<< HEAD
-.users {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
-=======
 .users-list {
   margin-top: 12px;
   display: flex;
@@ -450,23 +429,12 @@ button.ghost {
 
 .icon-btn .icon {
   font-size: 14px;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 }
 
 .user-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-<<<<<<< HEAD
-  gap: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #c7ddff;
-  background: #f7fbff;
-}
-
-.user-info {
-=======
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -720,13 +688,10 @@ button.ghost {
   display: flex;
   flex-direction: column;
   gap: 6px;
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
   font-size: 12px;
   color: var(--muted);
 }
 
-<<<<<<< HEAD
-=======
 .modal {
   position: fixed;
   inset: 0;
@@ -800,7 +765,6 @@ button.ghost {
   color: #ffffff;
 }
 
->>>>>>> a4eecfac93cf5a781329a2671262b86951e73502
 @media (max-width: 960px) {
   .layout {
     grid-template-columns: 1fr;
